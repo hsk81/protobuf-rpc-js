@@ -1,0 +1,31 @@
+{
+  "author": "Hasan Karahan <hasan.karahan@blackhan.com>",
+  "browser": {
+    "ws": false
+  },
+  "bugs": {
+    "url": "https://github.com/hsk81/protobuf-rpc-js/issues"
+  },
+  "dependencies": {
+    "protobufjs": ">=4.1.2",
+    "ws": ">=0.8.0"
+  },
+  "description": "Lightweight RPC using Protocol Buffers",
+  "keywords": [
+    "rpc",
+    "protocol",
+    "buffers"
+  ],
+  "homepage": "https://github.com/hsk81/protobuf-rpc-js#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "name": "protobuf-rpc-js",
+  "scripts": {
+    "test": "rpc"
+  },
+  "repository": {
+    "url": "git+https://github.com/hsk81/protobuf-rpc-js.git",
+    "type": "git"
+  },
+  "version": "1.0.0"
+}
