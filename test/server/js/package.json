@@ -1,0 +1,18 @@
+{
+  "author": "Hasan Karahan",
+  "bin": {"rpc-client": "./bin/rpc-server"},
+  "dependencies": {
+    "argparse": ">=1.0.3",
+    "assert": ">=1.3.0",
+    "protobufjs": ">=4.1.2",
+    "ws": ">=0.8.0"
+  },
+  "description": "RPC Server",
+  "engines": {"node": "*"},
+  "keywords": ["rpc", "server"],
+  "license": "MIT",
+  "main": "./lib/rpc-server",
+  "name": "rpc-server",
+  "repository": {"url": ""},
+  "version": "0.0.1"
+}

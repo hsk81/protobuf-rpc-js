@@ -7,8 +7,8 @@
     "url": "https://github.com/hsk81/protobuf-rpc-js/issues"
   },
   "dependencies": {
-    "protobufjs": ">=4.1.2",
-    "ws": ">=0.8.0"
+    "protobufjs": "4.*",
+    "ws": "0.*"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "keywords": [
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/hsk81/protobuf-rpc-js#readme",
   "license": "MIT",
   "main": "index.js",
-  "name": "protobuf-rpc-js",
+  "name": "protobuf-rpc",
   "scripts": {
     "test": "rpc"
   },
@@ -27,5 +27,5 @@
     "url": "git+https://github.com/hsk81/protobuf-rpc-js.git",
     "type": "git"
   },
-  "version": "1.0.0"
+  "version": "0.0.1"
 }
