@@ -2,9 +2,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var ArgumentParser = require('argparse').ArgumentParser,
-    assert = require('assert'),
     ProtoBuf = require('protobufjs'),
     WebSocket = require('ws');
+
+var assert = require('assert'),
+    path = require('path');
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -12,12 +14,20 @@ var ArgumentParser = require('argparse').ArgumentParser,
 var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Server', version: '0.0.1'
 });
-
 parser.addArgument(['port'], {
     nargs: '?', help: 'Server Port', defaultValue: '8088'
 });
 parser.addArgument(['host'], {
     nargs: '?', help: 'Server Host', defaultValue: 'localhost'
+});
+
+parser.addArgument(['--api-path'], {
+    nargs: '?', help: 'Path to API protocol',
+    defaultValue: __dirname + '/../../protocol/'
+});
+parser.addArgument(['--api-file'], {
+    nargs: '?', help: 'File of API protocol',
+    defaultValue: 'api.proto'
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,11 +37,23 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var SpaceFactory = ProtoBuf.loadProtoFile({
-    root: __dirname + '/../../../protocol', file: 'space.proto'
+var RpcFactory = ProtoBuf.loadProtoFile({
+    root: path.join(__dirname, '../../../protocol'), file: 'rpc.proto'
 });
 
-var Space = SpaceFactory.build();
+assert.ok(RpcFactory);
+var Rpc = RpcFactory.build('Rpc');
+assert.ok(Rpc);
+
+///////////////////////////////////////////////////////////////////////////////
+
+var ApiFactory = ProtoBuf.loadProtoFile({
+    root: args.api_path, file: args.api_file
+});
+
+assert.ok(ApiFactory);
+var Api = ApiFactory.build();
+assert.ok(Api);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,40 +64,40 @@ var wss = new WebSocket.Server({
 
 wss.on('connection', function (ws) {
     ws.on('message', function (data, opts) {
-        var rpc_req = Space.Rpc.Request.decode(data),
-            pair = Space.System.Pair.decode(rpc_req.data),
+        var rpc_req = Rpc.Request.decode(data),
+            pair = Api.Calculator.Pair.decode(rpc_req.data),
             result;
 
         switch (rpc_req.name) {
-            case '.System.Service.add':
-                result = new Space.System.AddResult({
+            case '.Calculator.Service.add':
+                result = new Api.Calculator.AddResult({
                     value: pair.lhs + pair.rhs
                 });
                 break;
 
-            case '.System.Service.sub':
-                result = new Space.System.SubResult({
+            case '.Calculator.Service.sub':
+                result = new Api.Calculator.SubResult({
                     value: pair.lhs - pair.rhs
                 });
                 break;
 
-            case '.System.Service.mul':
-                result = new Space.System.MulResult({
+            case '.Calculator.Service.mul':
+                result = new Api.Calculator.MulResult({
                     value: pair.lhs * pair.rhs
                 });
                 break;
 
-            case '.System.Service.div':
-                    result = new Space.System.DivResult({
-                        value: Math.floor(pair.lhs / pair.rhs)
-                    });
+            case '.Calculator.Service.div':
+                result = new Api.Calculator.DivResult({
+                    value: Math.floor(pair.lhs / pair.rhs)
+                });
                 break;
 
             default:
                 throw(new Error(rpc_req.name + ': not supported'));
         }
 
-        var rpc_res = new Space.Rpc.Response({
+        var rpc_res = new Rpc.Response({
             id: rpc_req.id, data: result.toBuffer()
         });
 

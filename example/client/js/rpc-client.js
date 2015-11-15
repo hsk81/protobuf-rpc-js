@@ -2,11 +2,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var ArgumentParser = require('argparse').ArgumentParser,
-    assert = require('assert'),
-    now = require('performance-now');
+    Rpc = require('../../../index.js');
 
-var Rpc = require('protobuf-rpc'),
-    Space = require('../protocol/space.js');
+var assert = require('assert'),
+    path = require('path');
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,6 +34,15 @@ parser.addArgument(['-d', '--n-div'], {
     nargs: '?', help: 'DIV Workers', defaultValue: 1
 });
 
+parser.addArgument(['--api-path'], {
+    nargs: '?', help: 'Path to API protocol',
+    defaultValue: path.join(__dirname, '../../protocol')
+});
+parser.addArgument(['--api-file'], {
+    nargs: '?', help: 'File of API protocol',
+    defaultValue: 'api.proto'
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 
 var args = parser.parseArgs();
@@ -42,18 +50,20 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+var Api = Rpc.loadProtocolFile({root: args.api_path, file: args.api_file});
+assert.ok(Api);
+
 var url = 'ws://' + args.host + ':' + args.port;
-
-///////////////////////////////////////////////////////////////////////////////
-
-var calculator_svc = new Rpc.Service(url, Space.Calculator.Service, {
-    '.System.Service.add': Space.System.AddResult,
-    '.System.Service.sub': Space.System.SubResult,
-    '.System.Service.mul': Space.System.MulResult,
-    '.System.Service.div': Space.System.DivResult
-});
+assert.ok(url);
 
 /////////////////////////////////////////////////////////////////////)/////////
+
+var calculator_svc = new Rpc.Service(url, Api.Calculator.Service, {
+    '.Calculator.Service.add': Api.Calculator.AddResult,
+    '.Calculator.Service.sub': Api.Calculator.SubResult,
+    '.Calculator.Service.mul': Api.Calculator.MulResult,
+    '.Calculator.Service.div': Api.Calculator.DivResult
+});
 
 calculator_svc.socket.on('open', function () {
     console.log('=', new Date());
@@ -65,7 +75,7 @@ calculator_svc.socket.on('open', function () {
 
     for (var add_i = 0; add_i < n_add; add_i++) {
         iid_add[add_i] = setInterval((function (i, t) {
-            var pair = new Space.System.Pair({
+            var pair = new Api.Calculator.Pair({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
@@ -75,14 +85,14 @@ calculator_svc.socket.on('open', function () {
 
                 assert.equal(pair.lhs + pair.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
-                console.log('dT[add]@%d:', i, dt[0]*1E3 + dt[1]/1E6);
+                console.log('dT[add]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(add_i, {}), 0);
     }
 
     for (var sub_i = 0; sub_i < n_sub; sub_i++) {
         iid_sub[sub_i] = setInterval((function (i, t) {
-            var pair = new Space.System.Pair({
+            var pair = new Api.Calculator.Pair({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
@@ -92,14 +102,14 @@ calculator_svc.socket.on('open', function () {
 
                 assert.equal(pair.lhs - pair.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
-                console.log('dT[sub]@%d:', i, dt[0]*1E3 + dt[1]/1E6);
+                console.log('dT[sub]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(sub_i, {}), 0);
     }
 
     for (var mul_i = 0; mul_i < n_mul; mul_i++) {
         iid_mul[mul_i] = setInterval((function (i, t) {
-            var pair = new Space.System.Pair({
+            var pair = new Api.Calculator.Pair({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
@@ -109,14 +119,14 @@ calculator_svc.socket.on('open', function () {
 
                 assert.equal(pair.lhs * pair.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
-                console.log('dT[mul]@%d:', i, dt[0]*1E3 + dt[1]/1E6);
+                console.log('dT[mul]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(mul_i, {}), 0);
     }
 
     for (var div_i = 0; div_i < n_div; div_i++) {
         iid_div[div_i] = setInterval((function (i, t) {
-            var pair = new Space.System.Pair({
+            var pair = new Api.Calculator.Pair({
                 lhs: random(0, 255), rhs: random(1, 256)
             });
 
@@ -126,7 +136,7 @@ calculator_svc.socket.on('open', function () {
 
                 assert.equal(Math.floor(pair.lhs / pair.rhs), result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
-                console.log('dT[div]@%d:', i, dt[0]*1E3 + dt[1]/1E6);
+                console.log('dT[div]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(div_i, {}), 0);
     }

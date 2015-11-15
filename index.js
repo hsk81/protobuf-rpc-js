@@ -1,42 +1,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-/*
-var Rpc = require('rpc');
-Rpc.Calculator = Rpc.load('calculator.proto');
-
-var calculator_svc = Rpc.Service(
-    'ws://127.0.0.1:8088', Rpc.Calculator.Service);
-
-var pair = new Rpc.Calculator.Pair({lhs:1, rhs:2});
-calculator_svc.add(pair, function (error, result) {
-    if (error) throw error;
-    console.log(pair, result);
-});
-*/
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 
 var ProtoBuf = require('protobufjs'),
-    WebSocket = require('ws'),
-    Path = requre('path');
+    WebSocket = require('ws');
+
+var assert = require('assert'),
+    crypto = require('crypto');
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var ProtocolFactory = function (path) {
-    var info = Path.parse(Path.normalize(path));
-    return ProtoBuf.loadProtoFile({
-        root: info.dir, file: info.base
-    });
-};
+var RpcFactory = ProtoBuf.loadProtoFile({
+    root: 'protocol', file: 'rpc.proto'
+});
 
-var Protocol = function (factory, name) {
-    return factory.build(name);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-var Rpc = Protocol(ProtocolFactory('src/protocol/rpc.proto'));
+assert.ok(RpcFactory);
+var Rpc = RpcFactory.build('Rpc');
+assert.ok(Rpc);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,21 +33,21 @@ function mine(fn) {
 
 exports.Service = mine(function (self, url, service_cls, return_cls) {
 
-    assert(url, 'WebSocket URL required');
-    assert(service_cls, 'Service class required');
-    assert(return_cls, 'Method to return class map required');
+    assert.ok(url, 'WebSocket URL required');
+    assert.ok(service_cls, 'Service class required');
+    assert.ok(return_cls, 'Method to return class map required');
 
     self._handler = {};
-    self.socket = new WebSocket(url);
-    self.socket.on('message', function (ev) {
-        var service_res = Rpc.Response.decode(ev.data);
+    self._ws = new WebSocket(url);
+    self._ws.on('message', function (data) {
+        var service_res = Rpc.Response.decode(data);
         if (self._handler[service_res.id]) {
             self._handler[service_res.id](service_res.data);
             delete self._handler[service_res.id];
         }
     });
 
-    return new service_cls(function (method, req, callback) {
+    var service = new service_cls(function (method, req, callback) {
         crypto.randomBytes(4, function (ex, buf) {
 
             if (ex) {
@@ -81,7 +61,7 @@ exports.Service = mine(function (self, url, service_cls, return_cls) {
                     callback(null, return_cls[method].decode(data));
                 };
 
-                self.socket.send(rpc_req.toBuffer(), function (error) {
+                self._ws.send(rpc_req.toBuffer(), function (error) {
                     if (error) {
                         delete self._handler[rpc_req.id];
                         callback(error, null);
@@ -90,9 +70,21 @@ exports.Service = mine(function (self, url, service_cls, return_cls) {
             }
         });
     });
+
+    service.socket = self._ws;
+    return service;
 });
 
 ///////////////////////////////////////////////////////////////////////////////
+
+exports.loadProtocolFile = function (path, name) {
+    var factory = ProtoBuf.loadProtoFile(path);
+    if (factory) return factory.build(name);
+};
+
+exports.loadProtocol = function (protocol) {
+    return ProtoBuf.loadProto(protocol);
+};
 
 exports.Rpc = Rpc;
 
