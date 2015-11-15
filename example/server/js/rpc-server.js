@@ -96,6 +96,13 @@ wss.on('connection', function (ws) {
                 });
                 break;
 
+            case '.Reflector.Service.ack':
+                req = Api.Reflector.AckRequest.decode(rpc_req.data);
+                res = new Api.Reflector.AckResult({
+                    timestamp: req.timestamp
+                });
+                break;
+
             default:
                 throw(new Error(rpc_req.name + ': not supported'));
         }
