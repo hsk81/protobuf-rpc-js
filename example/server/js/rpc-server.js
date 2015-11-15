@@ -23,7 +23,7 @@ parser.addArgument(['host'], {
 
 parser.addArgument(['--api-path'], {
     nargs: '?', help: 'Path to API protocol',
-    defaultValue: __dirname + '/../../protocol/'
+    defaultValue: path.join(__dirname, '../../protocol')
 });
 parser.addArgument(['--api-file'], {
     nargs: '?', help: 'File of API protocol',

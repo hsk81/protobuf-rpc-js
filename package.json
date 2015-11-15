@@ -7,9 +7,11 @@
     "url": "https://github.com/hsk81/protobuf-rpc-js/issues"
   },
   "dependencies": {
-    "argparse": "1.*",
     "protobufjs": "4.*",
     "ws": "0.*"
+  },
+  "devDependencies": {
+    "argparse": "1.*"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "files": [
