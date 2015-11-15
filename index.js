@@ -21,12 +21,31 @@ assert.ok(Rpc);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-function mine(fn) {
+function mine (fn) {
     return function () {
         return fn.apply(this, [this].concat(Array.prototype.slice.call(
             arguments
         )));
     };
+}
+
+function fqn (cls) {
+    return cls.parent ? fqn(cls.parent) + '.' + cls.name : cls.name;
+}
+
+function map_to (service_cls) {
+    var map = {};
+
+    var t_cls_fqn = fqn(service_cls.$type);
+    var t_cls = service_cls.$type.builder.lookup(t_cls_fqn);
+    var t_rpc_methods = t_cls.getChildren(ProtoBuf.Reflect.Service.RPCMethod);
+
+    t_rpc_methods.forEach(function (t_rpc_method) {
+        var key = t_cls_fqn + '.' + t_rpc_method.name;
+        map[key] = t_rpc_method.resolvedResponseType.clazz;
+    });
+
+    return map;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,7 +54,10 @@ exports.Service = mine(function (self, url, service_cls, return_cls) {
 
     assert.ok(url, 'WebSocket URL required');
     assert.ok(service_cls, 'Service class required');
-    assert.ok(return_cls, 'Method to return class map required');
+
+    if (return_cls === undefined) {
+        return_cls = map_to(service_cls)
+    }
 
     self._handler = {};
     self._ws = new WebSocket(url);

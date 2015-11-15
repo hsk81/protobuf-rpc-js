@@ -60,18 +60,11 @@ assert.ok(Api);
 var url = 'ws://' + args.host + ':' + args.port;
 assert.ok(url);
 
-/////////////////////////////////////////////////////////////////////)/////////
+var reflector_svc = new Rpc.Service(url, Api.Reflector.Service);
+assert.ok(reflector_svc);
 
-var reflector_svc = new Rpc.Service(url, Api.Reflector.Service, {
-    '.Reflector.Service.ack': Api.Reflector.AckResult
-});
-
-var calculator_svc = new Rpc.Service(url, Api.Calculator.Service, {
-    '.Calculator.Service.add': Api.Calculator.AddResult,
-    '.Calculator.Service.sub': Api.Calculator.SubResult,
-    '.Calculator.Service.mul': Api.Calculator.MulResult,
-    '.Calculator.Service.div': Api.Calculator.DivResult
-});
+var calculator_svc = new Rpc.Service(url, Api.Calculator.Service);
+assert.ok(calculator_svc);
 
 /////////////////////////////////////////////////////////////////////)/////////
 
@@ -81,13 +74,14 @@ reflector_svc.socket.on('open', function () {
     for (var ack_i = 0; ack_i < n_ack; ack_i++) {
         iid_ack[ack_i] = setInterval((function (i, t) {
             var req = new Api.Reflector.AckRequest({
+                // empty request
             });
 
             t[i] = process.hrtime();
             reflector_svc.ack(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.ok(res);
+                assert.ok(res); // empty response
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[ack]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
