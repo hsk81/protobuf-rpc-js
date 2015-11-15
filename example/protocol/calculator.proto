@@ -8,29 +8,43 @@ package Calculator;
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-message Pair {
+message AddRequest {
     int32 lhs = 1;
     int32 rhs = 2;
 }
-
 message AddResult {
     int32 value = 1;
+}
+
+message SubRequest {
+    int32 lhs = 1;
+    int32 rhs = 2;
 }
 message SubResult {
     int32 value = 1;
 }
+
+message MulRequest {
+    int32 lhs = 1;
+    int32 rhs = 2;
+}
 message MulResult {
     int32 value = 1;
+}
+
+message DivRequest {
+    int32 lhs = 1;
+    int32 rhs = 2;
 }
 message DivResult {
     int32 value = 1;
 }
 
 service Service {
-    rpc add(Pair) returns(AddResult);
-    rpc sub(Pair) returns(SubResult);
-    rpc mul(Pair) returns(MulResult);
-    rpc div(Pair) returns(DivResult);
+    rpc add(AddRequest) returns(AddResult);
+    rpc sub(SubRequest) returns(SubResult);
+    rpc mul(MulRequest) returns(MulResult);
+    rpc div(DivRequest) returns(DivResult);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

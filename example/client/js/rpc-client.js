@@ -75,15 +75,15 @@ calculator_svc.socket.on('open', function () {
 
     for (var add_i = 0; add_i < n_add; add_i++) {
         iid_add[add_i] = setInterval((function (i, t) {
-            var pair = new Api.Calculator.Pair({
+            var req = new Api.Calculator.AddRequest({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
             t[i] = process.hrtime();
-            calculator_svc.add(pair, function (error, result) {
+            calculator_svc.add(req, function (error, result) {
                 if (error !== null) throw error;
 
-                assert.equal(pair.lhs + pair.rhs, result.value);
+                assert.equal(req.lhs + req.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[add]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -92,15 +92,15 @@ calculator_svc.socket.on('open', function () {
 
     for (var sub_i = 0; sub_i < n_sub; sub_i++) {
         iid_sub[sub_i] = setInterval((function (i, t) {
-            var pair = new Api.Calculator.Pair({
+            var req = new Api.Calculator.SubRequest({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
             t[i] = process.hrtime();
-            calculator_svc.sub(pair, function (error, result) {
+            calculator_svc.sub(req, function (error, result) {
                 if (error !== null) throw error;
 
-                assert.equal(pair.lhs - pair.rhs, result.value);
+                assert.equal(req.lhs - req.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[sub]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -109,15 +109,15 @@ calculator_svc.socket.on('open', function () {
 
     for (var mul_i = 0; mul_i < n_mul; mul_i++) {
         iid_mul[mul_i] = setInterval((function (i, t) {
-            var pair = new Api.Calculator.Pair({
+            var req = new Api.Calculator.MulRequest({
                 lhs: random(0, 255), rhs: random(0, 255)
             });
 
             t[i] = process.hrtime();
-            calculator_svc.mul(pair, function (error, result) {
+            calculator_svc.mul(req, function (error, result) {
                 if (error !== null) throw error;
 
-                assert.equal(pair.lhs * pair.rhs, result.value);
+                assert.equal(req.lhs * req.rhs, result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[mul]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -126,15 +126,15 @@ calculator_svc.socket.on('open', function () {
 
     for (var div_i = 0; div_i < n_div; div_i++) {
         iid_div[div_i] = setInterval((function (i, t) {
-            var pair = new Api.Calculator.Pair({
+            var req = new Api.Calculator.DivRequest({
                 lhs: random(0, 255), rhs: random(1, 256)
             });
 
             t[i] = process.hrtime();
-            calculator_svc.div(pair, function (error, result) {
+            calculator_svc.div(req, function (error, result) {
                 if (error !== null) throw error;
 
-                assert.equal(Math.floor(pair.lhs / pair.rhs), result.value);
+                assert.equal(Math.floor(req.lhs / req.rhs), result.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[div]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });

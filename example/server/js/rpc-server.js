@@ -65,31 +65,34 @@ var wss = new WebSocket.Server({
 wss.on('connection', function (ws) {
     ws.on('message', function (data, opts) {
         var rpc_req = Rpc.Request.decode(data),
-            pair = Api.Calculator.Pair.decode(rpc_req.data),
-            result;
+            req, res;
 
         switch (rpc_req.name) {
             case '.Calculator.Service.add':
-                result = new Api.Calculator.AddResult({
-                    value: pair.lhs + pair.rhs
+                req = Api.Calculator.AddRequest.decode(rpc_req.data);
+                res = new Api.Calculator.AddResult({
+                    value: req.lhs + req.rhs
                 });
                 break;
 
             case '.Calculator.Service.sub':
-                result = new Api.Calculator.SubResult({
-                    value: pair.lhs - pair.rhs
+                req = Api.Calculator.SubRequest.decode(rpc_req.data);
+                res = new Api.Calculator.SubResult({
+                    value: req.lhs - req.rhs
                 });
                 break;
 
             case '.Calculator.Service.mul':
-                result = new Api.Calculator.MulResult({
-                    value: pair.lhs * pair.rhs
+                req = Api.Calculator.MulRequest.decode(rpc_req.data);
+                res = new Api.Calculator.MulResult({
+                    value: req.lhs * req.rhs
                 });
                 break;
 
             case '.Calculator.Service.div':
-                result = new Api.Calculator.DivResult({
-                    value: Math.floor(pair.lhs / pair.rhs)
+                req = Api.Calculator.DivRequest.decode(rpc_req.data);
+                res = new Api.Calculator.DivResult({
+                    value: Math.floor(req.lhs / req.rhs)
                 });
                 break;
 
@@ -98,7 +101,7 @@ wss.on('connection', function (ws) {
         }
 
         var rpc_res = new Rpc.Response({
-            id: rpc_req.id, data: result.toBuffer()
+            id: rpc_req.id, data: res.toBuffer()
         });
 
         ws.send(rpc_res.toBuffer());
