@@ -21,15 +21,6 @@ parser.addArgument(['host'], {
     nargs: '?', help: 'Server Host', defaultValue: 'localhost'
 });
 
-parser.addArgument(['--api-path'], {
-    nargs: '?', help: 'Path to API protocol',
-    defaultValue: path.join(__dirname, '../../protocol')
-});
-parser.addArgument(['--api-file'], {
-    nargs: '?', help: 'File of API protocol',
-    defaultValue: 'api.proto'
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 
 var args = parser.parseArgs();
@@ -38,20 +29,18 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 
 var RpcFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../../protocol'), file: 'rpc.proto'
-});
-
+    root: path.join(__dirname, '../../protocol'), file: 'rpc.proto'});
 assert.ok(RpcFactory);
+
 var Rpc = RpcFactory.build('Rpc');
 assert.ok(Rpc);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 var ApiFactory = ProtoBuf.loadProtoFile({
-    root: args.api_path, file: args.api_file
-});
-
+    root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
 assert.ok(ApiFactory);
+
 var Api = ApiFactory.build();
 assert.ok(Api);
 
@@ -68,6 +57,13 @@ wss.on('connection', function (ws) {
             req, res;
 
         switch (rpc_req.name) {
+            case '.Reflector.Service.ack':
+                req = Api.Reflector.AckRequest.decode(rpc_req.data);
+                res = new Api.Reflector.AckResult({
+                    timestamp: req.timestamp
+                });
+                break;
+
             case '.Calculator.Service.add':
                 req = Api.Calculator.AddRequest.decode(rpc_req.data);
                 res = new Api.Calculator.AddResult({
@@ -93,13 +89,6 @@ wss.on('connection', function (ws) {
                 req = Api.Calculator.DivRequest.decode(rpc_req.data);
                 res = new Api.Calculator.DivResult({
                     value: Math.floor(req.lhs / req.rhs)
-                });
-                break;
-
-            case '.Reflector.Service.ack':
-                req = Api.Reflector.AckRequest.decode(rpc_req.data);
-                res = new Api.Reflector.AckResult({
-                    timestamp: req.timestamp
                 });
                 break;
 

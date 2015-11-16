@@ -14,7 +14,7 @@ setup(
     install_requires=[
         'tornado>=4.3'
     ],
-    url='',
+    url='https://github.com/hsk81/protobuf-rpc-js.git',
     version='0.0.1',
 )
 

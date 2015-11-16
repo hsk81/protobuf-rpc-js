@@ -38,15 +38,6 @@ parser.addArgument(['--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
 });
 
-parser.addArgument(['--api-path'], {
-    nargs: '?', help: 'Path to API protocol',
-    defaultValue: path.join(__dirname, '../../protocol')
-});
-parser.addArgument(['--api-file'], {
-    nargs: '?', help: 'File of API protocol',
-    defaultValue: 'api.proto'
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 
 var args = parser.parseArgs();
@@ -54,8 +45,14 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var Api = Rpc.loadProtocolFile({root: args.api_path, file: args.api_file});
+var ApiFactory = Rpc.loadProtocolFile({
+    root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
+assert.ok(ApiFactory);
+
+var Api = ApiFactory.build();
 assert.ok(Api);
+
+/////////////////////////////////////////////////////////////////////)/////////
 
 var url = 'ws://' + args.host + ':' + args.port;
 assert.ok(url);
@@ -66,6 +63,7 @@ assert.ok(reflector_svc);
 var calculator_svc = new Rpc.Service(url, Api.Calculator.Service);
 assert.ok(calculator_svc);
 
+/////////////////////////////////////////////////////////////////////)/////////
 /////////////////////////////////////////////////////////////////////)/////////
 
 reflector_svc.socket.on('open', function () {

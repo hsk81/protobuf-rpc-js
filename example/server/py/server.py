@@ -9,8 +9,10 @@ import tornado.ioloop
 ###############################################################################
 ###############################################################################
 
-from protocol import space_pb2 as Space
-from protocol import system_pb2 as System
+from protocol import rpc_pb2 as Rpc
+from protocol import api_pb2 as Api
+from protocol import reflector_pb2 as Reflector
+from protocol import calculator_pb2 as Calculator
 
 ###############################################################################
 ###############################################################################
@@ -19,35 +21,47 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, data):
 
-        req = Space.Rpc.Request()
-        req.ParseFromString(data)
-        pair = System.Pair()
-        pair.ParseFromString(req.data)
+        rpc_req = Rpc.Request()
+        rpc_req.ParseFromString(data)
 
-        if req.name == '.System.Service.add':
-            result = System.AddResult()
-            result.value = pair.lhs + pair.rhs
+        if rpc_req.name == '.Reflector.Service.ack':
+            req = Reflector.AckRequest()
+            req.ParseFromString(rpc_req.data)
+            res = Reflector.AckResult()
+            res.value = req.lhs + req.rhs
 
-        elif req.name == '.System.Service.sub':
-            result = System.SubResult()
-            result.value = pair.lhs - pair.rhs
+        elif rpc_req.name == '.Calculator.Service.add':
+            req = Calculator.AddRequest()
+            req.ParseFromString(rpc_req.data)
+            res = Calculator.AddResult()
+            res.value = req.lhs + req.rhs
 
-        elif req.name == '.System.Service.mul':
-            result = System.MulResult()
-            result.value = pair.lhs * pair.rhs
+        elif rpc_req.name == '.Calculator.Service.sub':
+            req = Calculator.SubResult()
+            req.ParseFromString(rpc_req.data)
+            res = Calculator.SubResult()
+            res.value = req.lhs - req.rhs
 
-        elif req.name == '.System.Service.div':
-            result = System.DivResult()
-            result.value = pair.lhs / pair.rhs
+        elif rpc_req.name == '.Calculator.Service.mul':
+            req = Calculator.MulResult()
+            req.ParseFromString(rpc_req.data)
+            res = Calculator.MulResult()
+            res.value = req.lhs * req.rhs
+
+        elif rpc_req.name == '.Calculator.Service.div':
+            req = Calculator.DivResult()
+            req.ParseFromString(rpc_req.data)
+            res = Calculator.DivResult()
+            res.value = req.lhs / req.rhs
 
         else:
-            raise Exception('{0}: not supported'.format(req.name))
+            raise Exception('{0}: not supported'.format(rpc_req.name))
 
-        res = Space.Rpc.Response()
-        res.data = result.SerializeToString()
-        res.id = req.id
+        rpc_res = Rpc.Response()
+        rpc_res.data = res.SerializeToString()
+        rpc_res.id = rpc_req.id
 
-        self.write_message(res.SerializeToString(), binary=True)
+        self.write_message(rpc_res.SerializeToString(), binary=True)
 
     def check_origin(self, origin):
 

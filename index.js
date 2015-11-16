@@ -100,8 +100,7 @@ exports.Service = mine(function (self, url, service_cls, return_cls) {
 ///////////////////////////////////////////////////////////////////////////////
 
 exports.loadProtocolFile = function (path, name) {
-    var factory = ProtoBuf.loadProtoFile(path);
-    if (factory) return factory.build(name);
+    return ProtoBuf.loadProtoFile(path);
 };
 
 exports.loadProtocol = function (protocol) {
