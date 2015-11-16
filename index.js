@@ -10,17 +10,6 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var RpcFactory = ProtoBuf.loadProtoFile({
-    root: 'protocol', file: 'rpc.proto'
-});
-
-assert.ok(RpcFactory);
-var Rpc = RpcFactory.build('Rpc');
-assert.ok(Rpc);
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
 function mine (fn) {
     return function () {
         return fn.apply(this, [this].concat(Array.prototype.slice.call(
@@ -49,46 +38,68 @@ function map_to (service_cls) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-exports.Service = mine(function (self, url, service_cls, return_cls) {
+var Service = mine(function (self, url, service_cls, opts) {
 
-    assert.ok(url, 'WebSocket URL required');
-    assert.ok(service_cls, 'Service class required');
+    assert(url, 'WebSocket URL required');
+    assert(service_cls, 'Service class required');
 
-    if (return_cls === undefined) {
-        return_cls = map_to(service_cls)
+    if (opts === undefined) {
+        opts = {};
+    }
+    if (opts.return_cls === undefined) {
+        opts.return_cls = map_to(service_cls)
+    }
+    if (opts.rpc_protocol === undefined) {
+        var rpc_factory = ProtoBuf.loadProto(
+            'syntax = "proto3"; message Rpc {' +
+                'message Request {' +
+                    'string name=1; uint32 id=2; bytes data=3;' +
+                '}' +
+                'message Response {' +
+                    'uint32 id=2; bytes data=3;' +
+                '}' +
+            '}'
+        );
+
+        opts.rpc_protocol = rpc_factory.build('Rpc');
     }
 
     self._handler = {};
     self._ws = new WebSocket(url);
-    self._ws.on('message', function (data) {
-        var service_res = Rpc.Response.decode(data);
+    self._ws.binaryType = 'arraybuffer';
+    self._ws.onmessage = function (ev) {
+        var service_res = opts.rpc_protocol.Response.decode(ev.data);
         if (self._handler[service_res.id]) {
             self._handler[service_res.id](service_res.data);
             delete self._handler[service_res.id];
         }
-    });
+    };
 
     var service = new service_cls(function (method, req, callback) {
-        crypto.randomBytes(4, function (ex, buf) {
+        var with_id = function (id) {
+            var rpc_req = new opts.rpc_protocol.Request({
+                name: method, id: id, data: req.toBuffer()
+            });
 
+            self._handler[rpc_req.id] = function (data) {
+                callback(null, opts.return_cls[method].decode(data));
+            };
+
+            try {
+                self._ws.send(rpc_req.toBuffer());
+            } catch (ex) {
+                delete self._handler[rpc_req.id];
+                callback(ex, null);
+            }
+        };
+
+        crypto.randomBytes(4, function (ex, buf) {
             if (ex) {
                 callback(ex, null);
             } else {
-                var rpc_req = new Rpc.Request({
-                    name: method, id: buf.readUInt32LE(), data: req.toBuffer()
-                });
-
-                self._handler[rpc_req.id] = function (data) {
-                    callback(null, return_cls[method].decode(data));
-                };
-
-                self._ws.send(rpc_req.toBuffer(), function (error) {
-                    if (error) {
-                        delete self._handler[rpc_req.id];
-                        callback(error, null);
-                    }
-                });
+                with_id(buf.readUInt32LE());
             }
         });
     });
@@ -99,15 +110,9 @@ exports.Service = mine(function (self, url, service_cls, return_cls) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-exports.loadProtocolFile = function (path, name) {
-    return ProtoBuf.loadProtoFile(path);
+module.exports = function (url, service_cls, opts) {
+    return Service(url, service_cls, opts);
 };
-
-exports.loadProtocol = function (protocol) {
-    return ProtoBuf.loadProto(protocol);
-};
-
-exports.Rpc = Rpc;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

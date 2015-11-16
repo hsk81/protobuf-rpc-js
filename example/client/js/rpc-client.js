@@ -2,7 +2,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var ArgumentParser = require('argparse').ArgumentParser,
-    Rpc = require('../../../index.js');
+    ProtoBuf = require('protobufjs'),
+    ProtoBufRpc = require('../../../index.js');
 
 var assert = require('assert'),
     path = require('path');
@@ -45,7 +46,7 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var ApiFactory = Rpc.loadProtocolFile({
+var ApiFactory = ProtoBuf.loadProtoFile({
     root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
 assert.ok(ApiFactory);
 
@@ -57,10 +58,10 @@ assert.ok(Api);
 var url = 'ws://' + args.host + ':' + args.port;
 assert.ok(url);
 
-var reflector_svc = new Rpc.Service(url, Api.Reflector.Service);
+var reflector_svc = new ProtoBufRpc(url, Api.Reflector.Service);
 assert.ok(reflector_svc);
 
-var calculator_svc = new Rpc.Service(url, Api.Calculator.Service);
+var calculator_svc = new ProtoBufRpc(url, Api.Calculator.Service);
 assert.ok(calculator_svc);
 
 /////////////////////////////////////////////////////////////////////)/////////

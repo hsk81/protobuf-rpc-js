@@ -1,8 +1,5 @@
 {
   "author": "Hasan Karahan <hasan.karahan@blackhan.com> (http://www.blackhan.com)",
-  "browser": {
-    "ws": false
-  },
   "bugs": {
     "url": "https://github.com/hsk81/protobuf-rpc-js/issues"
   },
