@@ -10,7 +10,7 @@ build: \
 build-lib:
 	npm install
 
-build-server-py: build-server-py.pb
+build-server-py: build-py.pb
 	cd example/server/py && rm env -rf && mkdir -p env
 	cd example/server/py && virtualenv2 -p /usr/bin/python2 env/
 	cd example/server/py && env/bin/python setup.py install

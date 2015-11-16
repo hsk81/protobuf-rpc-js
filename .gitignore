@@ -28,3 +28,8 @@ node_modules
 
 .idea
 *_pb2.py
+example/protocol/__init__.py
+example/server/py/build
+example/server/py/dist
+example/server/py/env
+example/server/py/*.egg-info
