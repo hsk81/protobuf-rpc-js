@@ -5,14 +5,14 @@
 ###############################################################################
 
 build: \
-	build-lib build-server-py
+	build-npm
 
-build-lib:
+build-npm:
 	npm install
 
 build-server-py: build-py.pb
 	cd example/server/py && rm env -rf && mkdir -p env
-	cd example/server/py && virtualenv2 -p /usr/bin/python2 env/
+	cd example/server/py && virtualenv2 --system-site-packages -p /usr/bin/python2 env/
 	cd example/server/py && env/bin/python setup.py install
 
 build-py.pb:

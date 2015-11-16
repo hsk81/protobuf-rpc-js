@@ -9,8 +9,7 @@ import tornado.ioloop
 ###############################################################################
 ###############################################################################
 
-from protocol import rpc_pb2 as Rpc
-from protocol import api_pb2 as Api
+from protocol.rpc_pb2 import Rpc
 from protocol import reflector_pb2 as Reflector
 from protocol import calculator_pb2 as Calculator
 
@@ -28,7 +27,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             req = Reflector.AckRequest()
             req.ParseFromString(rpc_req.data)
             res = Reflector.AckResult()
-            res.value = req.lhs + req.rhs
 
         elif rpc_req.name == '.Calculator.Service.add':
             req = Calculator.AddRequest()
@@ -37,19 +35,19 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             res.value = req.lhs + req.rhs
 
         elif rpc_req.name == '.Calculator.Service.sub':
-            req = Calculator.SubResult()
+            req = Calculator.SubRequest()
             req.ParseFromString(rpc_req.data)
             res = Calculator.SubResult()
             res.value = req.lhs - req.rhs
 
         elif rpc_req.name == '.Calculator.Service.mul':
-            req = Calculator.MulResult()
+            req = Calculator.MulRequest()
             req.ParseFromString(rpc_req.data)
             res = Calculator.MulResult()
             res.value = req.lhs * req.rhs
 
         elif rpc_req.name == '.Calculator.Service.div':
-            req = Calculator.DivResult()
+            req = Calculator.DivRequest()
             req.ParseFromString(rpc_req.data)
             res = Calculator.DivResult()
             res.value = req.lhs / req.rhs
