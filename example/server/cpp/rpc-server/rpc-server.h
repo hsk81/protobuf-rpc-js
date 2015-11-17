@@ -22,6 +22,7 @@ private Q_SLOTS:
     void onConnection();
     void onBinary(QByteArray message);
     void onDisconnect();
+
 private:
     QWebSocketServer *m_server;
     QList<QWebSocket*> m_clients;
