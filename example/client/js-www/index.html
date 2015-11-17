@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>RPC with Protocol Buffers</title>
+
+    <!-- See: https://github.com/dcodeIO/long.js -->
+    <script src="lib/dcodeIO/long.min.js"></script>
+    <!-- See: https://github.com/dcodeIO/bytebuffer.js -->
+    <script src="lib/dcodeIO/bytebuffer.min.js"></script>
+    <!-- See: https://github.com/dcodeIO/protobuf.js -->
+    <script src="lib/dcodeIO/protobuf.min.js"></script>
+    <!-- See: https://github.com/hsk81/protobuf-rpc-js -->
+    <script src="lib/dcodeIO/protobuf-rpc.min.js"></script>
+</head>
+<body>
+<script>
+    var defer = function (fn, ms) {
+        return function () { return setTimeout(fn, ms||256); }
+    };
+</script>
+<script>
+    var SYSTEM = {
+        Api: (function () {
+            var api_factory = dcodeIO.ProtoBuf.loadProtoFile({
+                root: 'protocol', file: 'api.proto'
+            });
+
+            return api_factory.build();
+        }()),
+
+        Service: function (url, service_cls, opts) {
+            return dcodeIO.ProtoBuf.Rpc(url, service_cls, opts);
+        }
+    };
+
+    var SERVICE = {
+        Reflector: (function () {
+            return SYSTEM.Service(
+                    'ws://localhost:8088', SYSTEM.Api.Reflector.Service);
+        }()),
+        Calculator: (function () {
+            return SYSTEM.Service(
+                    'ws://localhost:8088', SYSTEM.Api.Calculator.Service);
+        }())
+    };
+
+    SERVICE.Reflector.socket.onopen = defer(function () {
+        var ack_req = new SYSTEM.Api.Reflector.AckRequest({
+            timestamp: new Date().toISOString()
+        });
+
+        SERVICE.Reflector.ack(ack_req, function (err, ack_res) {
+            console.log('[on:ack]', ack_req, ack_res, err);
+        });
+    });
+
+    SERVICE.Calculator.socket.onopen = defer(function () {
+        var add_req = new SYSTEM.Api.Calculator.AddRequest({
+            lhs: 2, rhs: 3
+        });
+
+        SERVICE.Calculator.add(add_req, function (err, add_res) {
+            console.log('[on:add]', add_req, add_res, err);
+        });
+
+        var sub_req = new SYSTEM.Api.Calculator.SubRequest({
+            lhs: 2, rhs: 3
+        });
+
+        SERVICE.Calculator.sub(sub_req, function (err, sub_res) {
+            console.log('[on:sub]', sub_req, sub_res, err);
+        });
+
+        var mul_req = new SYSTEM.Api.Calculator.MulRequest({
+            lhs: 2, rhs: 3
+        });
+
+        SERVICE.Calculator.mul(mul_req, function (err, mul_res) {
+            console.log('[on:mul]', mul_req, mul_res, err);
+        });
+
+        var div_req = new SYSTEM.Api.Calculator.DivRequest({
+            lhs: 2, rhs: 3
+        });
+
+        SERVICE.Calculator.div(div_req, function (err, div_res) {
+            console.log('[on:div]', div_req, div_res, err);
+        });
+    });
+</script>
+</body>
+</html>

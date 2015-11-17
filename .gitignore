@@ -28,6 +28,10 @@ node_modules
 
 .idea
 *_pb2.py
+example/client/js-www/build
+example/client/js-www/dist
+example/client/js-www/env
+example/client/js-www/*.egg-info
 example/protocol/__init__.py
 example/server/py/build
 example/server/py/dist

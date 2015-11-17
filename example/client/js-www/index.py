@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 ###############################################################################
 
-from setuptools import setup
+from bottle import Bottle, run, static_file
 
 ###############################################################################
 
-setup(
-    author='Hasan Karahan',
-    author_email='hasan.karahan@blackhan.com',
-    description='RPC Server',
-    name='rpc-server',
-    license='MIT',
-    install_requires=[
-        'tornado==4.3'
-    ],
-    url='https://github.com/hsk81/protobuf-rpc-js.git',
-    version='0.0.1',
-)
+app = Bottle()
 
 ###############################################################################
+
+@app.route('/')
+@app.route('/<file:path>')
+def static_serve(file='index.html'):
+    return static_file(file, root='.')
+
+###############################################################################
+
+run(app, host='localhost', port=8080)
+
 ###############################################################################
