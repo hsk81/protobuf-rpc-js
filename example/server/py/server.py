@@ -27,6 +27,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             req = Reflector.AckRequest()
             req.ParseFromString(rpc_req.data)
             res = Reflector.AckResult()
+            res.timestamp = req.timestamp
 
         elif rpc_req.name == '.Calculator.Service.add':
             req = Calculator.AddRequest()

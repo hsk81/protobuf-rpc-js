@@ -73,14 +73,14 @@ reflector_svc.socket.on('open', function () {
     for (var ack_i = 0; ack_i < n_ack; ack_i++) {
         iid_ack[ack_i] = setInterval((function (i, t) {
             var req = new Api.Reflector.AckRequest({
-                // empty request
+                timestamp: new Date().toISOString()
             });
 
             t[i] = process.hrtime();
             reflector_svc.ack(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.ok(res); // empty response
+                assert.ok(res.timestamp);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[ack]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });

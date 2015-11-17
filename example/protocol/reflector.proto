@@ -9,8 +9,10 @@ package Reflector;
 ///////////////////////////////////////////////////////////////////////////////
 
 message AckRequest {
+    string timestamp = 1;
 }
 message AckResult {
+    string timestamp = 1;
 }
 
 service Service {
