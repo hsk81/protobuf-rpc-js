@@ -20,7 +20,7 @@
     "buffers"
   ],
   "homepage": "https://github.com/hsk81/protobuf-rpc-js#readme",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "index.js",
   "name": "protobuf-rpc",
   "repository": {
