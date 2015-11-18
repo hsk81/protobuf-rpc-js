@@ -80,16 +80,12 @@ if __name__ == "__main__":
 
     parser.add_argument('-v', '--version', action='version',
         version='%(prog)s 0.0.1')
-    parser.add_argument('port', metavar='PORT', type=int,
+    parser.add_argument('-p', '--port', metavar='PORT', type=int,
         default=os.environ.get('RPC_PORT', 8088), nargs='?',
         help='Server Port')
-    parser.add_argument('host', metavar='HOST', type=str,
-        default=os.environ.get('RPC_HOST', 'localhost'),
-        nargs='?',
-        help='Server Host')
 
     arguments = parser.parse_args()
-    application.listen(arguments.port, arguments.host)
+    application.listen(arguments.port)
     tornado.ioloop.IOLoop.instance().start()
 
 ###############################################################################

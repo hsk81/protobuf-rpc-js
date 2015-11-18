@@ -14,11 +14,8 @@ var assert = require('assert'),
 var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Server', version: '0.0.1'
 });
-parser.addArgument(['port'], {
+parser.addArgument(['-p', '--port'], {
     nargs: '?', help: 'Server Port', defaultValue: '8088'
-});
-parser.addArgument(['host'], {
-    nargs: '?', help: 'Server Host', defaultValue: 'localhost'
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +45,7 @@ assert.ok(Api);
 ///////////////////////////////////////////////////////////////////////////////
 
 var wss = new WebSocket.Server({
-    host: args.host, port: args.port
+    port: args.port
 });
 
 wss.on('connection', function (ws) {
