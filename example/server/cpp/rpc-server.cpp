@@ -106,8 +106,9 @@ void RpcServer::onDisconnect() {
     Q_ASSERT(client);
 
     int length = m_clients.count();
+    Q_ASSERT(length > 0);
     m_clients.removeAll(client);
-
     Q_ASSERT(m_clients.count() < length);
+
     client->deleteLater();
 }
