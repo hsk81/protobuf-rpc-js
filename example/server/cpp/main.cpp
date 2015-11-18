@@ -1,6 +1,4 @@
 #include <QCoreApplication>
-#include <QDebug>
-
 #include "rpc-server.h"
 
 int main(int argc, char *argv[]) {
