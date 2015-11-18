@@ -9,7 +9,7 @@ QT_USE_NAMESPACE
 RpcServer::RpcServer(quint16 port, QObject *parent) : QObject(parent) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    QString name = QStringLiteral("RPC Server");
+    QString name = QStringLiteral("rpc-server");
     QWebSocketServer::SslMode mode = QWebSocketServer::NonSecureMode;
 
     m_server = new QWebSocketServer(name, mode);
