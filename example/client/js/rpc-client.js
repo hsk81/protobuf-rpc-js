@@ -15,10 +15,10 @@ var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Client', version: '0.0.1'
 });
 
-parser.addArgument(['port'], {
+parser.addArgument(['--port', '-p'], {
     nargs: '?', help: 'Server Port', defaultValue: '8088'
 });
-parser.addArgument(['host'], {
+parser.addArgument(['--host'], {
     nargs: '?', help: 'Server Host', defaultValue: 'localhost'
 });
 
