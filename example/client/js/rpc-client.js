@@ -48,23 +48,23 @@ var args = parser.parseArgs();
 
 var ApiFactory = ProtoBuf.loadProtoFile({
     root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
-assert.ok(ApiFactory);
+assert(ApiFactory);
 
 var Api = ApiFactory.build();
-assert.ok(Api);
+assert(Api);
 
 /////////////////////////////////////////////////////////////////////)/////////
 
 var url = 'ws://' + args.host + ':' + args.port;
-assert.ok(url);
+assert(url);
 
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     url: url
 });
 
-assert.ok(reflector_svc);
-assert.ok(reflector_svc.transport);
-assert.ok(reflector_svc.transport.socket);
+assert(reflector_svc);
+assert(reflector_svc.transport);
+assert(reflector_svc.transport.socket);
 
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
     url: url, transport: function () {
@@ -73,18 +73,21 @@ var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
             this.socket = new WebSocket(url);
             this.socket.binaryType = 'arraybuffer';
         };
-        this.send = function (buffer, callback, err_callback) {
+        this.send = function (buffer, msg_callback, err_callback) {
             this.socket.onmessage = function (ev) {
-                callback(ev.data);
+                msg_callback(ev.data);
             };
-            this.socket.send(buffer, err_callback);
+            this.socket.onerror = function (err) {
+                err_callback(err);
+            };
+            this.socket.send(buffer);
         };
     }
 });
 
-assert.ok(calculator_svc);
-assert.ok(calculator_svc.transport);
-assert.ok(calculator_svc.transport.socket);
+assert(calculator_svc);
+assert(calculator_svc.transport);
+assert(calculator_svc.transport.socket);
 
 /////////////////////////////////////////////////////////////////////)/////////
 /////////////////////////////////////////////////////////////////////)/////////
@@ -102,7 +105,7 @@ reflector_svc.transport.socket.on('open', function () {
             reflector_svc.ack(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.ok(res.timestamp);
+                assert(res.timestamp);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[ack]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -129,7 +132,7 @@ calculator_svc.transport.socket.on('open', function () {
             calculator_svc.add(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.equal(req.lhs + req.rhs, res.value);
+                assert(req.lhs + req.rhs === res.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[add]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -147,7 +150,7 @@ calculator_svc.transport.socket.on('open', function () {
             calculator_svc.sub(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.equal(req.lhs - req.rhs, res.value);
+                assert(req.lhs - req.rhs === res.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[sub]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -165,7 +168,7 @@ calculator_svc.transport.socket.on('open', function () {
             calculator_svc.mul(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.equal(req.lhs * req.rhs, res.value);
+                assert(req.lhs * req.rhs === res.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[mul]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
@@ -183,7 +186,7 @@ calculator_svc.transport.socket.on('open', function () {
             calculator_svc.div(req, function (error, res) {
                 if (error !== null) throw error;
 
-                assert.equal(Math.floor(req.lhs / req.rhs), res.value);
+                assert(Math.floor(req.lhs / req.rhs) === res.value);
                 var dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[div]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });

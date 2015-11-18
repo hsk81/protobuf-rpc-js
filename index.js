@@ -44,17 +44,17 @@ function map_to (service_cls) {
     var map = {};
 
     var t_cls_fqn = service_cls.$type.fqn();
-    assert.ok(t_cls_fqn);
+    assert(t_cls_fqn);
     var t_cls = service_cls.$type.builder.lookup(t_cls_fqn);
-    assert.ok(t_cls);
+    assert(t_cls);
     var t_rpc_methods = t_cls.getChildren(ProtoBuf.Reflect.Service.RPCMethod);
-    assert.ok(t_rpc_methods);
+    assert(t_rpc_methods);
 
     t_rpc_methods.forEach(function (t_rpc_method) {
         var key = t_cls_fqn + '.' + t_rpc_method.name;
-        assert.ok(key);
+        assert(key);
         map[key] = t_rpc_method.resolvedResponseType.clazz;
-        assert.ok(map[key]);
+        assert(map[key]);
     });
 
     return map;
@@ -66,9 +66,10 @@ function map_to (service_cls) {
 var Service = mine(function (self, service_cls, opts) {
     assert(service_cls, 'Service class required');
 
-    assert.equal(self._processor, undefined);
+    assert(self._processor === undefined);
     self._processor = {};
-    assert.equal(self._process, undefined);
+
+    assert(self._process === undefined);
     self._process = function (buffer) {
         var rpc_res = self.rpc_message.Response.decode(buffer);
         if (self._processor[rpc_res.id]) {
@@ -80,24 +81,29 @@ var Service = mine(function (self, service_cls, opts) {
     if (opts === undefined) {
         opts = {};
     }
-    assert.equal(self.url, undefined);
+
+    assert(self.url === undefined);
     if (opts.url === undefined) {
         self.url = 'ws://localhost:80'
     } else {
         self.url = opts.url;
     }
-    assert.equal(self.transport, undefined);
+
+    assert(self.transport === undefined);
     if (opts.transport === undefined) {
         self.transport = new function () {
             this.open = function (url) {
                 this.socket = new WebSocket(url);
                 this.socket.binaryType = 'arraybuffer';
             };
-            this.send = function (buffer, callback, err_callback) {
+            this.send = function (buffer, msg_callback, err_callback) {
                 this.socket.onmessage = function (ev) {
-                    callback(ev.data);
+                    msg_callback(ev.data);
                 };
-                this.socket.send(buffer, err_callback);
+                this.socket.onerror = function (err) {
+                    err_callback(err);
+                };
+                this.socket.send(buffer);
             };
         }();
         self.transport.open(self.url);
@@ -105,13 +111,15 @@ var Service = mine(function (self, service_cls, opts) {
         self.transport = new opts.transport();
         self.transport.open(self.url);
     }
-    assert.equal(self.return_cls, undefined);
+
+    assert(self.return_cls === undefined);
     if (opts.return_cls === undefined) {
         self.return_cls = map_to(service_cls)
     } else {
         self.return_cls = opts.return_cls;
     }
-    assert.equal(self.rpc_message, undefined);
+
+    assert(self.rpc_message === undefined);
     if (opts.rpc_message === undefined) {
         var rpc_factory = ProtoBuf.loadProto(
             'syntax = "proto3"; message Rpc {' +
@@ -129,7 +137,7 @@ var Service = mine(function (self, service_cls, opts) {
     }
 
     service_cls.prototype.transport = self.transport;
-    assert.ok(service_cls.prototype.transport);
+    assert(service_cls.prototype.transport);
 
     return new service_cls(function (method, req, callback) {
         var rpc_req = new self.rpc_message.Request({
