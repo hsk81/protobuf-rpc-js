@@ -58,16 +58,38 @@ assert.ok(Api);
 var url = 'ws://' + args.host + ':' + args.port;
 assert.ok(url);
 
-var reflector_svc = new ProtoBufRpc(url, Api.Reflector.Service);
+var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    url: url
+});
+
 assert.ok(reflector_svc);
+assert.ok(reflector_svc.transport);
+assert.ok(reflector_svc.transport.socket);
 
-var calculator_svc = new ProtoBufRpc(url, Api.Calculator.Service);
+var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
+    url: url, transport: function () {
+        this.open = function (url) {
+            var WebSocket = require('ws');
+            this.socket = new WebSocket(url);
+            this.socket.binaryType = 'arraybuffer';
+        };
+        this.send = function (buffer, callback, err_callback) {
+            this.socket.onmessage = function (ev) {
+                callback(ev.data);
+            };
+            this.socket.send(buffer, err_callback);
+        };
+    }
+});
+
 assert.ok(calculator_svc);
+assert.ok(calculator_svc.transport);
+assert.ok(calculator_svc.transport.socket);
 
 /////////////////////////////////////////////////////////////////////)/////////
 /////////////////////////////////////////////////////////////////////)/////////
 
-reflector_svc.socket.on('open', function () {
+reflector_svc.transport.socket.on('open', function () {
 
     var n_ack = args.n_ack, iid_ack = {};
     for (var ack_i = 0; ack_i < n_ack; ack_i++) {
@@ -94,7 +116,7 @@ reflector_svc.socket.on('open', function () {
     }, 10000);
 });
 
-calculator_svc.socket.on('open', function () {
+calculator_svc.transport.socket.on('open', function () {
 
     var n_add = args.n_add, iid_add = {};
     for (var add_i = 0; add_i < n_add; add_i++) {

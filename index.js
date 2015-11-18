@@ -40,20 +40,21 @@ function mine (fn) {
     };
 }
 
-function fqn (cls) {
-    return cls.parent ? fqn(cls.parent) + '.' + cls.name : cls.name;
-}
-
 function map_to (service_cls) {
     var map = {};
 
-    var t_cls_fqn = fqn(service_cls.$type);
+    var t_cls_fqn = service_cls.$type.fqn();
+    assert.ok(t_cls_fqn);
     var t_cls = service_cls.$type.builder.lookup(t_cls_fqn);
+    assert.ok(t_cls);
     var t_rpc_methods = t_cls.getChildren(ProtoBuf.Reflect.Service.RPCMethod);
+    assert.ok(t_rpc_methods);
 
     t_rpc_methods.forEach(function (t_rpc_method) {
         var key = t_cls_fqn + '.' + t_rpc_method.name;
+        assert.ok(key);
         map[key] = t_rpc_method.resolvedResponseType.clazz;
+        assert.ok(map[key]);
     });
 
     return map;
@@ -62,18 +63,56 @@ function map_to (service_cls) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var Service = mine(function (self, url, service_cls, opts) {
-
-    assert(url, 'WebSocket URL required');
+var Service = mine(function (self, service_cls, opts) {
     assert(service_cls, 'Service class required');
+
+    assert.equal(self._processor, undefined);
+    self._processor = {};
+    assert.equal(self._process, undefined);
+    self._process = function (buffer) {
+        var rpc_res = self.rpc_message.Response.decode(buffer);
+        if (self._processor[rpc_res.id]) {
+            self._processor[rpc_res.id](rpc_res.data);
+            delete self._processor[rpc_res.id];
+        }
+    };
 
     if (opts === undefined) {
         opts = {};
     }
-    if (opts.return_cls === undefined) {
-        opts.return_cls = map_to(service_cls)
+    assert.equal(self.url, undefined);
+    if (opts.url === undefined) {
+        self.url = 'ws://localhost:80'
+    } else {
+        self.url = opts.url;
     }
-    if (opts.rpc_protocol === undefined) {
+    assert.equal(self.transport, undefined);
+    if (opts.transport === undefined) {
+        self.transport = new function () {
+            this.open = function (url) {
+                this.socket = new WebSocket(url);
+                this.socket.binaryType = 'arraybuffer';
+            };
+            this.send = function (buffer, callback, err_callback) {
+                this.socket.onmessage = function (ev) {
+                    callback(ev.data);
+                };
+                this.socket.send(buffer, err_callback);
+            };
+        }();
+        self.transport.open(self.url);
+    } else {
+        self.transport = new opts.transport();
+        self.transport.open(self.url);
+    }
+    assert.equal(self.return_cls, undefined);
+    if (opts.return_cls === undefined) {
+        self.return_cls = map_to(service_cls)
+    } else {
+        self.return_cls = opts.return_cls;
+    }
+    assert.equal(self.rpc_message, undefined);
+    if (opts.rpc_message === undefined) {
         var rpc_factory = ProtoBuf.loadProto(
             'syntax = "proto3"; message Rpc {' +
                 'message Request {' +
@@ -84,56 +123,39 @@ var Service = mine(function (self, url, service_cls, opts) {
                 '}' +
             '}'
         );
-
-        opts.rpc_protocol = rpc_factory.build('Rpc');
+        self.rpc_message = rpc_factory.build('Rpc');
+    } else {
+        self.rpc_message = opts.rpc_message;
     }
 
-    self._handler = {};
-    self._ws = new WebSocket(url);
-    self._ws.binaryType = 'arraybuffer';
-    self._ws.onmessage = function (ev) {
-        var service_res = opts.rpc_protocol.Response.decode(ev.data);
-        if (self._handler[service_res.id]) {
-            self._handler[service_res.id](service_res.data);
-            delete self._handler[service_res.id];
-        }
-    };
+    service_cls.prototype.transport = self.transport;
+    assert.ok(service_cls.prototype.transport);
 
-    var service = new service_cls(function (method, req, callback) {
-        var with_id = function (id) {
-            var rpc_req = new opts.rpc_protocol.Request({
-                name: method, id: id, data: req.toBuffer()
-            });
+    return new service_cls(function (method, req, callback) {
+        var rpc_req = new self.rpc_message.Request({
+            id: crypto.randomBytes(4).readUInt32LE(),
+            data: req.toBuffer(),
+            name: method
+        });
 
-            self._handler[rpc_req.id] = function (data) {
-                callback(null, opts.return_cls[method].decode(data));
-            };
-
-            try {
-                self._ws.send(rpc_req.toBuffer());
-            } catch (ex) {
-                delete self._handler[rpc_req.id];
-                callback(ex, null);
-            }
+        self._processor[rpc_req.id] = function (data) {
+            callback(null, self.return_cls[method].decode(data));
         };
 
-        crypto.randomBytes(4, function (ex, buf) {
-            if (ex) {
-                callback(ex, null);
-            } else {
-                with_id(buf.readUInt32LE());
-            }
-        });
+        self.transport.send(
+            rpc_req.encode().toBuffer(), self._process, function (err) {
+                if (err !== undefined)  {
+                    delete self._processor[rpc_req.id];
+                    callback(err, null);
+                }
+            });
     });
-
-    service.socket = self._ws;
-    return service;
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (url, service_cls, opts) {
-    return Service(url, service_cls, opts);
+    return new Service(url, service_cls, opts);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
