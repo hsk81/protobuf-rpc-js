@@ -24,6 +24,9 @@ build-py.pb:
 	cd example/protocol && touch __init__.py
 	cd example/protocol && protoc --proto_path=. --python_out=. *.proto
 
+build-cpp.pb:
+	cd example/protocol && protoc --proto_path=. --cpp_out=. *.proto
+
 ###############################################################################
 ###############################################################################
 

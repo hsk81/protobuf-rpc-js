@@ -24,18 +24,23 @@ build/Release
 
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
-node_modules
 
 .idea
-*_pb2.py
+node_modules
+
 example/client/js-www/build
 example/client/js-www/dist
 example/client/js-www/env
 example/client/js-www/*.egg-info
+
 example/protocol/__init__.py
+example/protocol/*_pb2.py
+example/protocol/*.pb.cc
+example/protocol/*.pb.h
+
 example/server/py/build
 example/server/py/dist
 example/server/py/env
 example/server/py/*.egg-info
-example/server/cpp/build*
-*.pro.user
+example/server/cpp/build
+example/server/cpp/*.pro.user
