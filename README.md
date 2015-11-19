@@ -2,17 +2,19 @@
 
 The [ProtoBuf] library allows in JavaScript (JS) to create messages using Google's [Protocol Buffers], where the latter define in addition to messages also so called remote procedure call (RPC) services, i.e.
 
-    package Reflector;
+```proto
+package Reflector;
 
-    message AckRequest {
-        string timestamp = 1;
-    }
-    message AckResult {
-        string timestamp = 1;
-    }
-    service Service {
-        rpc ack(AckRequest) returns(AckResult);
-    }
+message AckRequest {
+    string timestamp = 1;
+}
+message AckResult {
+    string timestamp = 1;
+}
+service Service {
+    rpc ack(AckRequest) returns(AckResult);
+}
+```
 
 Here the RPC service has been named `Reflector.Service`, but any other designation is possible: It provides only a single method `ack`, which takes an `AckRequest` and returns an `AckResult`. Both structure contain a single `timestamp` field, where the result timestamp is simply a copy of the request's timestamp. Therefore the `ack` method allows us to measure the round trip time (RTT) of an RCP implementation.
 
@@ -20,38 +22,40 @@ Actually the [Protocol Buffers] leave the actual implementation of the RCP servi
 
 This [ProtoBuf.Rpc] JS library attempts to fill this gap using *only* a minimal and lightweight yet extensible approach. Following concepts and technologies have been used:
 
-               +-------------------------------------------------+
-               | RPC Service : Invocation of aN RPC method       |
-               +-------------------------------------------------+
-  JS Client:   | Transport   : WebSockets (or AJAX)              |
-               +-------------------------------------------------+
-               | Protocol    : Binary buffers (or JSON, Base64)  |
-               +-------------------------------------------------+
-                      |v|                    |^|
-                      |v| #1. RPC_REQ        |^| #2. RPC_RES 
-                      |v|                    |^|
-               +-------------------------------------------------+
-               | Protocol    : Binary buffers (or JSON, Base64)  |
-  Any Server:  +-------------------------------------------------+
-               | RPC Service : Execution of an RPC method        |
-               +-------------------------------------------------+
+       +-------------------------------------------------+
+       | RPC Service : Invocation of aN RPC method       |
+       +-------------------------------------------------+
+       | Transport   : WebSockets (or AJAX)              |  JS Client
+       +-------------------------------------------------+
+       | Protocol    : Binary buffers (or JSON, Base64)  |
+       +-------------------------------------------------+
+              |v|                    |^|
+              |v| #1. RPC_REQ        |^| #2. RPC_RES 
+              |v|                    |^|
+       +-------------------------------------------------+
+       | Protocol    : Binary buffers (or JSON, Base64)  |
+       +-------------------------------------------------+  Any Server
+       | RPC Service : Execution of an RPC method        |
+       +-------------------------------------------------+
  
 As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS Client upon which the server answers with a RPC_RES response. These two messages are defined as:
 
-    syntax = "proto3";
+```proto
+syntax = "proto3";
 
-    message Rpc {
-        message Request {
-            string name = 1;
-            uint32 id = 2;
-            bytes data = 3;
-        }
-    
-        message Response {
-            uint32 id = 2;
-            bytes data = 3;
-        }
+message Rpc {
+    message Request {
+        string name = 1;
+        uint32 id = 2;
+        bytes data = 3;
     }
+
+    message Response {
+        uint32 id = 2;
+        bytes data = 3;
+    }
+}
+```
 
 The fully qualified `name` (FQN) of an `Rpc.Request` indicates which method on which service shall be executed on the server side, e.g. `.Reflector.Service.ack`.
 
