@@ -226,7 +226,7 @@ reflector_svc.transport.socket.on('open', function () {
 
 ### Process `reflector_svc.ack(..)` on the server side
 
-As already mentioned this [ProtoBuf.Rpc.js] libraryr provides abstractions for the client side only. Therefore, on the server side you are on your own - a straight forward way to process the requests on the server is to check them in a switch statement and run the corresponding functionality:
+As already mentioned this [ProtoBuf.Rpc.js] library provides abstractions for the client side only. Therefore, on the server side you are on your own - a straight forward way to process the requests on the server is to check them in a switch statement and then run the corresponding functionality:
 
 ```js
 ws.on('message', function (data) {
