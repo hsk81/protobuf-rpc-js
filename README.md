@@ -155,7 +155,7 @@ If you reload, then the `[200]` status codes might get replaced with `[304]` (im
     (index):79 [on:mul] e {lhs: 2, rhs: 3} e {value: 6} null
     (index):86 [on:div] e {lhs: 2, rhs: 3} e {value: 0} null
 
-So apparently, acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same number of log lines on you `rpc-server`protos output (if logging is on).
+So apparently, acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same number of log lines on you `rpc-server`'s output (if logging was on).
 
 ## Message wrapping: Rpc.Request and Rpc.Response
 
