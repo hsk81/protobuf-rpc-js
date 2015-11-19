@@ -79,15 +79,15 @@ Invoke the installation of dependencies with [NPM]:
 
 For now you don't need to install the [Protocol Buffer] specific compiler (`protoc`) or any language bindings, since the [ProtoBuf.js] library is able to process the protocol files (with the `*.proto` extensions) on the fly. We'll discuss installation and corresponding requirements for the server examples later.
  
- ## NodeJS
- 
- ### Server Execution
+## Execution: NodeJS
+
+### Server Execution
 
 Start the server and enable console logging:
  
     cd pb-rpc-js.git && ./example/server/js/rpc-server.js --logging
     
- ### Client Execution
+### Client Execution
 
 Start the client and enable the addition, subtraction, multiplication and division methods of the `Calculator` service and acknowledgment of the `Reflector` service:
 
@@ -145,6 +145,23 @@ If you reload then the `[200]` status codes might get replaced with `[304]` (imp
     (index):79 [on:mul] e {lhs: 2, rhs: 3} e {value: 6} null
     (index):86 [on:div] e {lhs: 2, rhs: 3} e {value: 0} null
 
-So apparently acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same amount of log line on you `rpc-server`s output (if logging is on).
+So apparently acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same amount of log line on you `rpc-server`protos output (if logging is on).
 
+## Message wrapping: Rpc.Request and Rpc.Response
+
+Both `Rpc.Request` and `Rpc.Response` have `data` field, which is a list of bytes to contains any kind of custom message: For example, when a `Reflector.AckRequest` is sent and `Reflector.AckResponse` is received, then they are packing into `Rpc.Request` and `Rpc.Response` like:
+
+Rpc.Request: 
+
+    +-----------------------------------------------------------------------------+
+    | name=.Reflector.ack id=<uint32> data=<[Reflector.AckRequest:timestamp=".."] |
+    +-----------------------------------------------------------------------------+
+
+Rpc.Response:
+
+    +-----------------------------------------------------------------------------+
+    |  id=same-<uint32, data=<[Reflector.AckResponse:same-timestamp=".."]         |
+    +-----------------------------------------------------------------------------+
+
+By default both the request and response messages are sent using a compact binary encoding.
 
