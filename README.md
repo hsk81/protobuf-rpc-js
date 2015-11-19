@@ -147,7 +147,7 @@ Ensure that your `rpc-server` is still running and then open the `http://localho
     [200] /protocol/reflector.proto
     [200] /protocol/calculator.proto
 
-If you reload, then the `[200]` status codes might get replaced with `[304]` (implying caching). The page on `http://localhost:8080` should simply be empty, but opening up the console (via e.g. `F12`) and checking the output you may discover:
+If you reload, then the `[200]` status codes might get replaced with `[304]` (implying caching). The page on `http://localhost:8080` should simply be empty, but opening up the console (via e.g. `F12`) and checking the output you should discover:
 
     (index):56 [on:ack] e {timestamp: "2015-11-19T07:25:17.665Z"} e {timestamp: "2015-11-19T07:25:17.665Z"} null
     (index):65 [on:add] e {lhs: 2, rhs: 3} e {value: 5} null
