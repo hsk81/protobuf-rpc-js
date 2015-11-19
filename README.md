@@ -68,13 +68,13 @@ This [ProtoBuf.Rpc.js] JS library offers an abstraction for RPC services on the 
 ## Installation: NodeJS
 
 Clone the library with [GIT]:
-
-    git clone https://github.com/hsk81/protobuf-rpc-js pb-rpc-js.git
-
+```bash
+git clone https://github.com/hsk81/protobuf-rpc-js pb-rpc-js.git
+```
 Invoke the installation of dependencies with [NPM]:
-
-    cd pb-rpc-js.git && npm install
-
+```bash
+cd pb-rpc-js.git && npm install
+```
 For now you don't need to install the [Protocol Buffer] specific compiler (`protoc`) or any language bindings, since the [ProtoBuf.js] library is able to process the protocol files (with the `*.proto` extensions) on the fly. We'll discuss installation and corresponding requirements for the server examples later.
  
 ## Execution: NodeJS
@@ -82,19 +82,19 @@ For now you don't need to install the [Protocol Buffer] specific compiler (`prot
 ### Server Execution
 
 Start the server and enable console logging:
- 
-    cd pb-rpc-js.git && ./example/server/js/rpc-server.js --logging
-    
+```bash
+cd pb-rpc-js.git && ./example/server/js/rpc-server.js --logging
+```
 ### Client Execution
 
 Start the client and enable the addition, subtraction, multiplication and division methods of the `Calculator` service and acknowledgment of the `Reflector` service:
-
-    cd pb-rpc-js.git && ./example/client/js/rpc-client.js --n-add=1 --n-sub=1 --n-mul=1 --n-div=1 --n-ack=1
-
+```bash
+cd pb-rpc-js.git && ./example/client/js/rpc-client.js --n-add=1 --n-sub=1 --n-mul=1 --n-div=1 --n-ack=1
+```
 Since the provided values `1` are the defaults anyway, you could have also simply run:
-
-    cd pb-rpc-js.git && ./example/client/js/rpc-client.js
-
+```bash
+cd pb-rpc-js.git && ./example/client/js/rpc-client.js
+```
 For the next `10` seconds the client will keep invoking the corresponding functionality on the server side, measure the RTT in milli-seconds and log them to the standard output:
  
     dT[ack]@0: 5.464066
@@ -120,9 +120,9 @@ The RTTs start high with about 5.4ms (on my machine) apparently due the NodeJS' 
 
 The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser supports; but you need first to run the corresponding `index.js` static server to be able to provide the `index.html` to a browser:
 
-    cd pb-rpc-js.git && ./example/client/js-www/index.js
-    Paper Server - listening on http://localhost:8080/
-
+```bash
+cd pb-rpc-js.git && ./example/client/js-www/index.js
+```
 Ensure that your `rpc-server` is still running and then open the `http://localhost:8080/`: the static file server `index.js` should produce an output similar to:
 
     Paper Server - listening on http://localhost:8080/
@@ -167,76 +167,76 @@ By default both the request and response messages are sent using a compact binar
 
 In the following the JS usage of the [ProtoBuf.Rpc.js] is shown, for this to work, the `api.proto` protocol file needs to be available. The `api.proto` simply imports the `reflector.proto` and `calculator.proto` files:
 
-    ```proto
-    import public "reflector.proto";
-    import public "calculator.proto";
+```proto
+import public "reflector.proto";
+import public "calculator.proto";
 ```
 
 ### Load `api.proto` and create `Api` namespace
 
-    ```js
-    var ProtoBuf = require('protobufjs'),
-        ProtoBufRpc = require('protobufjs-rpc');
-    
-    var ApiFactory = ProtoBuf.loadProtoFile({
-        root: path.join(__dirname, 'path/to/protocol'), file: 'api.proto'});
-    assert(ApiFactory);
-    
-    var Api = ApiFactory.build();
-    assert(Api);
-    ```
+```js
+var ProtoBuf = require('protobufjs'),
+    ProtoBufRpc = require('protobufjs-rpc');
+
+var ApiFactory = ProtoBuf.loadProtoFile({
+    root: path.join(__dirname, 'path/to/protocol'), file: 'api.proto'});
+assert(ApiFactory);
+
+var Api = ApiFactory.build();
+assert(Api);
+```
 
 ### Instantiate the `reflector_svc` service
 
 Ensure that the `rpc-server` is running, when this code gets executed:
 
-    ```js
-    var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
-        url: 'ws://localhost:8088'
-    });
-    ```
+```js
+var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    url: 'ws://localhost:8088'
+});
+```
 
 ### Invoke the `reflector_svc.ack(..)` RPC
 
 When the RPC call is executed immediately after creating the `reflector_svc` the it is necessary to wait for the `open` message on the corresponding `socket`. Please note that the invocation is asynchronous:
 
-    ```js
-    reflector_svc.transport.socket.on('open', function () {
-        var req = new Api.Reflector.AckRequest({
-            timestamp: new Date().toISOString()
-        });
-        
-        reflector_svc.ack(req, function (error, res) {
-            if (error !== null) throw error;
-            assert(res.timestamp);
-        });
+```js
+reflector_svc.transport.socket.on('open', function () {
+    var req = new Api.Reflector.AckRequest({
+        timestamp: new Date().toISOString()
     });
-    ```
+    
+    reflector_svc.ack(req, function (error, res) {
+        if (error !== null) throw error;
+        assert(res.timestamp);
+    });
+});
+```
 
 ### Process `reflector_svc.ack(..)` on the server side
 
 As already mentioned this [ProtoBuf.Rpc.js] provides abstractions for the client side only. Therefore on the server side you are on your own: a very simple way to process the requests is to check them in a switch statement:
 
-    ```js
-    ws.on('message', function (data) {
-        var rpc_req, req, rpc_res, res;
+```js
+ws.on('message', function (data) {
+    var rpc_req, req, rpc_res, res;
 
-        rpc_req = Rpc.Request.decode(data);
-        switch (rpc_req.name) {
-            case '.Reflector.Service.ack':
-                req = Api.Reflector.AckRequest.decode(rpc_req.data);
-                res = new Api.Reflector.AckResult({timestamp: req.timestamp});
-                break;
-            case '.Calculator.Service.add':
-                ...
-            default:
-                throw(new Error(rpc_req.name + ': not supported'));
-        }
+    rpc_req = Rpc.Request.decode(data);
+    switch (rpc_req.name) {
+        case '.Reflector.Service.ack':
+            req = Api.Reflector.AckRequest.decode(rpc_req.data);
+            res = new Api.Reflector.AckResult({timestamp: req.timestamp});
+            break;
+        case '.Calculator.Service.add':
+            ...
+        default:
+            throw(new Error(rpc_req.name + ': not supported'));
+    }
 
-        rpc_res = new Rpc.Response({id: rpc_req.id, data: res.toBuffer()});
-        ws.send(rpc_res.toBuffer());
-    });
-    ```
+    rpc_res = new Rpc.Response({id: rpc_req.id, data: res.toBuffer()});
+    ws.send(rpc_res.toBuffer());
+});
+```
 
     1. Decode RPC request;
     2. Switch based on request name `.Reflector.Service.ack`;
