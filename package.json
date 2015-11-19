@@ -28,5 +28,5 @@
     "url": "git+https://github.com/hsk81/protobuf-rpc-js.git",
     "type": "git"
   },
-  "version": "0.0.1"
+  "version": "1.0.0"
 }
