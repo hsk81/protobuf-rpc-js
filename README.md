@@ -267,7 +267,7 @@ A QT/C++ version of `rpc-server` with `<QtWebSockets>` has been implemented.
  
 #### Build:
 
-For the following to work you require a `QT5+` installation with `qmake` in the bin path; further the [protobuf3] package includes libraries which are required for compilation and linkage:
+For the following to work you require a `QT5+` installation with `qmake`; further, the [protobuf3] package has includes and libraries which are required for compilation and linkage:
 
 ```bash
 cd pb-rpc-js.git && make server-cpp
@@ -275,7 +275,7 @@ cd pb-rpc-js.git && make server-cpp
 
 #### Run:
 
-Once compilation is done, you can run it with e.g.:
+Once compilation is done, you can run it with:
 
 ```bash
 cd pb-rpc-js.git && ./example/server/cpp/rpc-server --logging
@@ -287,18 +287,16 @@ Ensure that the NodeJS `rpc-server` has been closed, otherwise the C++ `rpc-serv
 
 A Python of `rpc-server` with [tornado] has been implemented.
 
-
 #### Build:
 
-You need a Python 2 installed on your system; *plus* you need the language binding for your particular version of Python for Protocol Buffers syntax version `3`! Unfortunately, it does not seem to be available on the [PIP] repository; therefore you have to install e.g. [python2-protobuf3] using your package manager globally. Then you can run:
+You need a Python 2 installed on your system; *plus* you need the language binding for your particular version of Python for Protocol Buffers' syntax version `3`! Unfortunately, it does not seem to be available on the [PIP] repository. Therefore, you have to install e.g. [python2-protobuf3] using your package manager globally. Then you can run:
 
 ```bash
 cd pb-rpc-js.git && make server-py
 ```
-
 #### Run:
 
-Once compilation is done, you can run it with:
+Once compilation is done, you can execute:
 
 ```bash
 cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
@@ -306,7 +304,7 @@ cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
 
 ## Protocol Alternatives
 
-When you instantiate the `reflector_svc` you can provide an additional `protocol` parameter, like:
+When you instantiate the `reflector_svc` service you can provide an additional `protocol` parameter, like:
 
 ```js
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
@@ -353,7 +351,7 @@ Then the server should start producing an output similar to:
 {"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
 ```
 
-As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you might need, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as your servers understand your changes of course).
+As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you might need, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as your servers are kept in sync with your changes of course).
 
 The `protocol` layer supports two further functions:
 
@@ -369,11 +367,11 @@ var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
 });
 ```
 
-The `rpc_*` functions modify the RPC frame messages, while the `msg_*` functions modify the actual message's content.
+The `rpc_*` functions modify the RPC frame messages, while the `msg_*` functions modify the actual message content.
 
 ## Transport Alternatives
 
-When you instantiate the `reflector_svc` you can further provide an additional `transport` parameter, like:
+When you instantiate the `reflector_svc` service you can further provide an additional `transport` parameter, like:
 
 ```js
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
