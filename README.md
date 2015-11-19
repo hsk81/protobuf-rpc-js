@@ -3,7 +3,7 @@
 [GIT]: https://www.git-scm.com/
 [NPM]: https://www.npmjs.com/
 [NodeJS]: https://nodejs.org/api/
-[Pytheon]: https://www.python.org/
+[Python]: https://www.python.org/
 [ProtoBuf.js]: https://github.com/dcodeIO/protobuf.js
 [ProtoBuf.Rpc.js]: https://github.com/hsk81/protobuf-rpc-js
 [Protocol Buffers]: https://developers.google.com/protocol-buffers/

@@ -148,9 +148,9 @@ reflector_svc.transport.socket.on('open', function () {
     }
 
     setTimeout(function () {
-        for (var key_div in iid_ack)
-            if (iid_ack.hasOwnProperty(key_div))
-                clearInterval(iid_ack[key_div]);
+        for (var key_ack in iid_ack)
+            if (iid_ack.hasOwnProperty(key_ack))
+                clearInterval(iid_ack[key_ack]);
     }, 10000);
 });
 
