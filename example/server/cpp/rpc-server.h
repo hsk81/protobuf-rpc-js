@@ -29,6 +29,12 @@ private Q_SLOTS:
     void onDisconnect();
 
 private:
+    bool m_logging;
+public:
+    bool getLogging() { return m_logging; }
+    void setLogging(bool value) { m_logging = value; }
+
+private:
     QWebSocketServer *m_server;
     QList<QWebSocket*> m_clients;
 

@@ -20,6 +20,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, data):
 
+        if arguments.logging:
+            print '[on:message]', repr(data)
+
         rpc_req = Rpc.Request()
         rpc_req.ParseFromString(data)
 
@@ -74,6 +77,7 @@ application = tornado.web.Application([(r'/', WebSocketHandler)])
 ###############################################################################
 
 if __name__ == "__main__":
+    global arguments
 
     parser = argparse.ArgumentParser(prog='RPC Server',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -83,6 +87,12 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--port', metavar='PORT', type=int,
         default=os.environ.get('RPC_PORT', 8088), nargs='?',
         help='Server Port')
+    parser.add_argument('-l', '--logging',
+        default=os.environ.get('LOGGING', False), action='store_true',
+        help='Message logging')
+    parser.add_argument('--json-rpc',
+        default=os.environ.get('JSON_RPC', False), action='store_true',
+        help='JSON-RPC encoding')
 
     arguments = parser.parse_args()
     application.listen(arguments.port)

@@ -3,10 +3,11 @@
 #include "protocol/api.pb.h"
 
 #include <QtWebSockets/QtWebSockets>
+#include <QDebug>
 
 QT_USE_NAMESPACE
 
-RpcServer::RpcServer(quint16 port, QObject *parent) : QObject(parent) {
+RpcServer::RpcServer(quint16 port, QObject *parent) : QObject(parent), m_logging(false) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     QString name = QStringLiteral("rpc-server");
@@ -47,6 +48,10 @@ void RpcServer::onConnection() {
 void RpcServer::onBinary(QByteArray req_msg) {
     QWebSocket *client = qobject_cast<QWebSocket*>(sender());
     Q_ASSERT(client);
+
+    if (this->getLogging()) {
+        qDebug() << "[on:message]" << req_msg.toBase64();
+    }
 
     const void *req_data = req_msg.constData();
     Q_ASSERT(req_data);

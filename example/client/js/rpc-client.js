@@ -15,11 +15,15 @@ var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Client', version: '0.0.1'
 });
 
-parser.addArgument(['--port', '-p'], {
-    nargs: '?', help: 'Server Port', defaultValue: '8088'
-});
 parser.addArgument(['--host'], {
     nargs: '?', help: 'Server Host', defaultValue: 'localhost'
+});
+parser.addArgument(['--port', '-p'], {
+    help: 'Server Port [default: 8088]', defaultValue: '8088', nargs: '?'
+});
+parser.addArgument(['--json-rpc'], {
+    help: 'JSON-RPC encoding  [default: false]', defaultValue: false,
+    action: 'storeTrue'
 });
 
 parser.addArgument(['-a', '--n-add'], {
@@ -34,8 +38,7 @@ parser.addArgument(['-m', '--n-mul'], {
 parser.addArgument(['-d', '--n-div'], {
     nargs: '?', help: 'DIV Workers', defaultValue: 1
 });
-
-parser.addArgument(['--n-ack'], {
+parser.addArgument(['-n', '--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
 });
 
@@ -59,6 +62,28 @@ var url = 'ws://' + args.host + ':' + args.port;
 assert(url);
 
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    protocol: function () {
+        this.rpc_encode = function (msg) {
+            if (args.json_rpc) {
+                return msg.encodeJSON();
+            } else {
+                return msg.toBuffer();
+            }
+        };
+        this.rpc_decode = function (cls, buf) {
+            if (args.json_rpc) {
+                return cls.decodeJSON(buf);
+            } else {
+                return cls.decode(buf);
+            }
+        };
+        this.msg_encode = function (msg) {
+            return msg.toBuffer();
+        };
+        this.msg_decode = function (cls, buf) {
+            return cls.decode(buf);
+        }
+    },
     url: url
 });
 
@@ -69,13 +94,21 @@ assert(reflector_svc.transport.socket);
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
     protocol: function () {
         this.rpc_encode = function (msg) {
-            return msg.encode().toBuffer();
+            if (args.json_rpc) {
+                return msg.encodeJSON();
+            } else {
+                return msg.toBuffer();
+            }
         };
         this.rpc_decode = function (cls, buf) {
-            return cls.decode(buf);
+            if (args.json_rpc) {
+                return cls.decodeJSON(buf);
+            } else {
+                return cls.decode(buf);
+            }
         };
         this.msg_encode = function (msg) {
-            return msg.encode().toBuffer();
+            return msg.toBuffer();
         };
         this.msg_decode = function (cls, buf) {
             return cls.decode(buf);

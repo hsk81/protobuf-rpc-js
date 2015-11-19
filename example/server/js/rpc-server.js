@@ -14,8 +14,17 @@ var assert = require('assert'),
 var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Server', version: '0.0.1'
 });
+parser.addArgument(['-l', '--logging'], {
+    help: 'Message logging [default: false]', defaultValue: false,
+    action: 'storeTrue'
+});
 parser.addArgument(['-p', '--port'], {
-    nargs: '?', help: 'Server Port', defaultValue: '8088'
+    help: 'Server Port [default: 8088]', defaultValue: '8088',
+    nargs: '?'
+});
+parser.addArgument(['--json-rpc'], {
+    help: 'JSON-RPC encoding [default: false]', defaultValue: false,
+    action: 'storeTrue'
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,9 +58,19 @@ var wss = new WebSocket.Server({
 });
 
 wss.on('connection', function (ws) {
-    ws.on('message', function (data, opts) {
-        var rpc_req = Rpc.Request.decode(data),
-            req, res;
+    ws.on('message', function (data, flags) {
+        var rpc_req, req, rpc_res, res;
+
+        if (args.logging) {
+            console.log('[on:message]', data, {
+                binary: flags.binary, masked: flags.masked
+            });
+        }
+        if (args.json_rpc) {
+            rpc_req = Rpc.Request.decodeJSON(data);
+        } else {
+            rpc_req = Rpc.Request.decode(data);
+        }
 
         switch (rpc_req.name) {
             case '.Reflector.Service.ack':
@@ -93,11 +112,16 @@ wss.on('connection', function (ws) {
                 throw(new Error(rpc_req.name + ': not supported'));
         }
 
-        var rpc_res = new Rpc.Response({
+        rpc_res = new Rpc.Response({
             id: rpc_req.id, data: res.toBuffer()
         });
 
-        ws.send(rpc_res.toBuffer());
+        if (args.json_rpc) {
+            ws.send(rpc_res.encodeJSON());
+        } else {
+            ws.send(rpc_res.toBuffer());
+        }
+
     });
 });
 
