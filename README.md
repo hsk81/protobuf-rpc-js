@@ -23,21 +23,21 @@ Actually the [Protocol Buffers] leave the actual implementation of the RCP servi
 
 This [ProtoBuf.Rpc.js] library attempts to fill this gap using *only* a minimal and lightweight yet extensible approach. Following concepts and technologies have been used:
 
-   +-------------------------------------------------+
-   | RPC Service : Invocation of aN RPC method       |
-   +-------------------------------------------------+
-   | Transport   : WebSockets (or AJAX)              |  JS Client
-   +-------------------------------------------------+
-   | Protocol    : Binary buffers (or JSON, Base64)  |
-   +-------------------------------------------------+
-          |v|                    |^|
-          |v| #1. RPC_REQ        |^| #2. RPC_RES 
-          |v|                    |^|
-   +-------------------------------------------------+
-   | Protocol    : Binary buffers (or JSON, Base64)  |
-   +-------------------------------------------------+  Any Server
-   | RPC Service : Execution of an RPC method        |
-   +-------------------------------------------------+
+       +-------------------------------------------------+
+       | RPC Service : Invocation of aN RPC method       |
+       +-------------------------------------------------+
+       | Transport   : WebSockets (or AJAX)              |  JS Client
+       +-------------------------------------------------+
+       | Protocol    : Binary buffers (or JSON, Base64)  |
+       +-------------------------------------------------+
+              |v|                    |^|
+              |v| #1. RPC_REQ        |^| #2. RPC_RES 
+              |v|                    |^|
+       +-------------------------------------------------+
+       | Protocol    : Binary buffers (or JSON, Base64)  |
+       +-------------------------------------------------+  Any Server
+       | RPC Service : Execution of an RPC method        |
+       +-------------------------------------------------+
  
 As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS Client upon which the server answers with a RPC_RES response. These two messages are defined as:
 
@@ -245,3 +245,47 @@ ws.on('message', function (data) {
     6. Create a `Rpc.Response` message;
     7. Send message within a buffer;
 
+## Servers alternatives
+
+### QT/C++ `rpc-server`:
+
+A QT/C++ version of `rpc-server` with `<QtWebSockets>` has been implemented.
+ 
+#### Build:
+
+For the following to work you require a `QT5+` installation with `qmake` in the bin path; further the [protobuf3] package includes and libraries need to be available:
+
+```bash
+cd pb-rpc-js.git && make server-cpp
+```
+
+#### Run:
+
+Once compilation is done, you can run it with e.g.:
+
+```bash
+cd pb-rpc-js.git && ./example/server/cpp/rpc-server --logging
+```
+
+Ensure that the NodeJS `rpc-server` has been closed, otherwise the C++ server will fail to listen to the corresponding port.
+
+### Python `rpc-server`:
+
+A Python of `rpc-server` with [tornado] has been implemented.
+
+
+#### Build:
+
+You need a modern Python 2 installed on you system; *plus* you need the language binding for your particular version of Python for Protocol Buffers syntax version `3`! Unfortunately it does not seem to be available on the [PIP] repository; therefore you have to install e.g. [python2-protobuf3] using your package manager globally. Then you can run:
+
+```bash
+cd pb-rpc-js.git && make server-py
+```
+
+#### Run:
+
+Once compilation is done, you can run it with e.g.:
+
+```bash
+cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
+```
