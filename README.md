@@ -340,3 +340,46 @@ Then the server should start producing and output similar to:
 ```
 
 As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as you servers understand your changes of course).
+
+The `protocol` layer supports two further functions:
+
+```
+var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    protocol: function () {
+        this.rpc_encode = function (msg) { ... };
+        this.rpc_decode = function (cls, buf) { ... };
+        this.msg_encode = function (msg) { ... };
+        this.msg_decode = function (cls, buf) { ... };
+    },
+    url: url
+});
+```
+
+The `rpc_*` function modify the RPC frame message, while the `msg_*` functions modify the actual message content.
+
+## Transport Alternatives
+
+When you instantiate e.g. the `reflector_svc` you can provide an additional `transport` parameter, like:
+
+```js
+var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    transport: function () {
+        this.open = function (url) {
+            this.socket = new WebSocket(url);
+            this.socket.binaryType = 'arraybuffer';
+        };
+        this.send = function (buffer, msg_callback, err_callback) {
+            this.socket.onmessage = function (ev) {
+                msg_callback(ev.data);
+            };
+            this.socket.onerror = function (err) {
+                err_callback(err);
+            };
+            this.socket.send(buffer);
+        };
+    },
+    url: url
+});
+```
+
+The example above shows the default internal transport, which is based on binary web-sockets. You could replace this implementation by providing a `transport` layer with the `open` and `send` functions signatures defined as above, and use AJAX for example.
