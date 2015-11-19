@@ -98,7 +98,9 @@ var Service = mine(function (self, service_cls, opts) {
         self.transport.open(self.url);
     } else {
         self.transport = new opts.transport();
+        assert(self.transport.open, 'transport.open required');
         self.transport.open(self.url);
+        assert(self.transport.send, 'transport.send required');
     }
     service_cls.prototype.transport = self.transport;
     assert(service_cls.prototype.transport);
@@ -107,13 +109,13 @@ var Service = mine(function (self, service_cls, opts) {
     if (opts.protocol === undefined) {
         self.protocol = new function () {
             this.rpc_encode = function (msg) {
-                return msg.encode().toBuffer();
+                return msg.toBuffer();
             };
             this.rpc_decode = function (cls, buf) {
                 return cls.decode(buf);
             };
             this.msg_encode = function (msg) {
-                return msg.encode().toBuffer();
+                return msg.toBuffer();
             };
             this.msg_decode = function (cls, buf) {
                 return cls.decode(buf);
@@ -121,6 +123,26 @@ var Service = mine(function (self, service_cls, opts) {
         };
     } else {
         self.protocol = new opts.protocol();
+        if (self.protocol.rpc_encode === undefined) {
+            self.protocol.rpc_encode = function (msg) {
+                return msg.toBuffer();
+            };
+        }
+        if (self.protocol.rpc_decode === undefined) {
+            self.protocol.rpc_decode = function (cls, buf) {
+                return cls.decode(buf);
+            };
+        }
+        if (self.protocol.msg_encode === undefined) {
+            self.protocol.msg_encode = function (msg) {
+                return msg.toBuffer();
+            };
+        }
+        if (self.protocol.msg_decode === undefined) {
+            self.protocol.msg_decode = function (cls, buf) {
+                return cls.decode(buf);
+            };
+        }
     }
     service_cls.prototype.protocol = self.protocol;
     assert(service_cls.prototype.protocol);

@@ -77,12 +77,6 @@ var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
                 return cls.decode(buf);
             }
         };
-        this.msg_encode = function (msg) {
-            return msg.toBuffer();
-        };
-        this.msg_decode = function (cls, buf) {
-            return cls.decode(buf);
-        }
     },
     url: url
 });
@@ -107,12 +101,6 @@ var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
                 return cls.decode(buf);
             }
         };
-        this.msg_encode = function (msg) {
-            return msg.toBuffer();
-        };
-        this.msg_decode = function (cls, buf) {
-            return cls.decode(buf);
-        }
     },
     transport: function () {
         this.open = function (url) {
