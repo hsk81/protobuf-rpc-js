@@ -1,5 +1,17 @@
 # ProtoBuf.Rpc.js: Lightweight RPC for JavaScript using Protocol Buffers
 
+[GIT]: https://www.git-scm.com/
+[NPM]: https://www.npmjs.com/
+[NodeJS]: https://nodejs.org/api/
+[Pytheon]: https://www.python.org/
+[ProtoBuf.js]: https://github.com/dcodeIO/protobuf.js
+[ProtoBuf.Rpc.js]: https://github.com/hsk81/protobuf-rpc-js
+[Protocol Buffers]: https://developers.google.com/protocol-buffers/
+[protobuf3]: https://developers.google.com/protocol-buffers/docs/proto3
+[QT/C++]: https://www.qt.io/
+[tornado]: http://www.tornadoweb.org/en/stable/
+[V8 JavaScript Engine]: https://github.com/v8/v8
+
 The [ProtoBuf.js] library allows in JavaScript (JS) to create messages using Google's [Protocol Buffers], where the latter define in addition to messages also so called remote procedure call (RPC) services, i.e.
 
 ```proto
