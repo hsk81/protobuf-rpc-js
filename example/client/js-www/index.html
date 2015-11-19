@@ -36,16 +36,18 @@
 
     var SERVICE = {
         Reflector: (function () {
-            return SYSTEM.Service(
-                    'ws://localhost:8088', SYSTEM.Api.Reflector.Service);
+            return SYSTEM.Service(SYSTEM.Api.Reflector.Service, {
+                url: 'ws://localhost:8088'
+            });
         }()),
         Calculator: (function () {
-            return SYSTEM.Service(
-                    'ws://localhost:8088', SYSTEM.Api.Calculator.Service);
+            return SYSTEM.Service(SYSTEM.Api.Calculator.Service, {
+                url: 'ws://localhost:8088'
+            });
         }())
     };
 
-    SERVICE.Reflector.socket.onopen = defer(function () {
+    SERVICE.Reflector.transport.socket.onopen = defer(function () {
         var ack_req = new SYSTEM.Api.Reflector.AckRequest({
             timestamp: new Date().toISOString()
         });
@@ -55,11 +57,10 @@
         });
     });
 
-    SERVICE.Calculator.socket.onopen = defer(function () {
+    SERVICE.Calculator.transport.socket.onopen = defer(function () {
         var add_req = new SYSTEM.Api.Calculator.AddRequest({
             lhs: 2, rhs: 3
         });
-
         SERVICE.Calculator.add(add_req, function (err, add_res) {
             console.log('[on:add]', add_req, add_res, err);
         });
@@ -67,7 +68,6 @@
         var sub_req = new SYSTEM.Api.Calculator.SubRequest({
             lhs: 2, rhs: 3
         });
-
         SERVICE.Calculator.sub(sub_req, function (err, sub_res) {
             console.log('[on:sub]', sub_req, sub_res, err);
         });
@@ -75,7 +75,6 @@
         var mul_req = new SYSTEM.Api.Calculator.MulRequest({
             lhs: 2, rhs: 3
         });
-
         SERVICE.Calculator.mul(mul_req, function (err, mul_res) {
             console.log('[on:mul]', mul_req, mul_res, err);
         });
@@ -83,7 +82,6 @@
         var div_req = new SYSTEM.Api.Calculator.DivRequest({
             lhs: 2, rhs: 3
         });
-
         SERVICE.Calculator.div(div_req, function (err, div_res) {
             console.log('[on:div]', div_req, div_res, err);
         });
