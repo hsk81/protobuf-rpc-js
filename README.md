@@ -11,6 +11,7 @@ message AckRequest {
 message AckResult {
     string timestamp = 1;
 }
+
 service Service {
     rpc ack(AckRequest) returns(AckResult);
 }
@@ -41,15 +42,12 @@ This [ProtoBuf.Rpc.js] library attempts to fill this gap using *only* a minimal 
 As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS Client upon which the server answers with a RPC_RES response. These two messages are defined as:
 
 ```proto
-syntax = "proto3";
-
 message Rpc {
     message Request {
         string name = 1;
         uint32 id = 2;
         bytes data = 3;
     }
-
     message Response {
         uint32 id = 2;
         bytes data = 3;
@@ -164,4 +162,87 @@ Rpc.Response:
     +-----------------------------------------------------------------------------+
 
 By default both the request and response messages are sent using a compact binary encoding.
+
+## Usage
+
+In the following the JS usage of the [ProtoBuf.Rpc.js] is shown, for this to work, the `api.proto` protocol file needs to be available. The `api.proto` simply imports the `reflector.proto` and `calculator.proto` files:
+
+    ```proto
+    import public "reflector.proto";
+    import public "calculator.proto";
+```
+
+### Load `api.proto` and create `Api` namespace
+
+    ```js
+    var ProtoBuf = require('protobufjs'),
+        ProtoBufRpc = require('protobufjs-rpc');
+    
+    var ApiFactory = ProtoBuf.loadProtoFile({
+        root: path.join(__dirname, 'path/to/protocol'), file: 'api.proto'});
+    assert(ApiFactory);
+    
+    var Api = ApiFactory.build();
+    assert(Api);
+    ```
+
+### Instantiate the `reflector_svc` service
+
+Ensure that the `rpc-server` is running, when this code gets executed:
+
+    ```js
+    var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+        url: 'ws://localhost:8088'
+    });
+    ```
+
+### Invoke the `reflector_svc.ack(..)` RPC
+
+When the RPC call is executed immediately after creating the `reflector_svc` the it is necessary to wait for the `open` message on the corresponding `socket`. Please note that the invocation is asynchronous:
+
+    ```js
+    reflector_svc.transport.socket.on('open', function () {
+        var req = new Api.Reflector.AckRequest({
+            timestamp: new Date().toISOString()
+        });
+        
+        reflector_svc.ack(req, function (error, res) {
+            if (error !== null) throw error;
+            assert(res.timestamp);
+        });
+    });
+    ```
+
+### Process `reflector_svc.ack(..)` on the server side
+
+As already mentioned this [ProtoBuf.Rpc.js] provides abstractions for the client side only. Therefore on the server side you are on your own: a very simple way to process the requests is to check them in a switch statement:
+
+    ```js
+    ws.on('message', function (data) {
+        var rpc_req, req, rpc_res, res;
+
+        rpc_req = Rpc.Request.decode(data);
+        switch (rpc_req.name) {
+            case '.Reflector.Service.ack':
+                req = Api.Reflector.AckRequest.decode(rpc_req.data);
+                res = new Api.Reflector.AckResult({timestamp: req.timestamp});
+                break;
+            case '.Calculator.Service.add':
+                ...
+            default:
+                throw(new Error(rpc_req.name + ': not supported'));
+        }
+
+        rpc_res = new Rpc.Response({id: rpc_req.id, data: res.toBuffer()});
+        ws.send(rpc_res.toBuffer());
+    });
+    ```
+
+    1. Decode RPC request;
+    2. Switch based on request name `.Reflector.Service.ack`;
+    3. Decode RPC request message `Api.Reflector.AckRequest`;
+    4. Create an `Api.Reflector.AckResult` message;
+    5. Encode `Api.Reflector.AckResult.data` field;
+    6. Create a `Rpc.Response` message;
+    7. Send message within a buffer;
 

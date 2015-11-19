@@ -119,7 +119,6 @@ wss.on('connection', function (ws) {
         } else {
             ws.send(rpc_res.toBuffer());
         }
-
     });
 });
 
