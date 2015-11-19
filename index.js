@@ -70,8 +70,8 @@ var Service = mine(function (self, service_cls, opts) {
     self._processor = {};
 
     assert(self._process === undefined);
-    self._process = function (buffer) {
-        var rpc_res = self.rpc_message.Response.decode(buffer);
+    self._process = function (buf) {
+        var rpc_res = self.protocol.rpc_decode(self.rpc_message.Response, buf);
         if (self._processor[rpc_res.id]) {
             self._processor[rpc_res.id](rpc_res.data);
             delete self._processor[rpc_res.id];
@@ -94,7 +94,7 @@ var Service = mine(function (self, service_cls, opts) {
         self.transport = new function () {
             this.open = function (url) {
                 this.socket = new WebSocket(url);
-                this.socket.binaryType = 'arraybuffer';
+             // this.socket.binaryType = 'arraybuffer';
             };
             this.send = function (buffer, msg_callback, err_callback) {
                 this.socket.onmessage = function (ev) {
@@ -110,6 +110,26 @@ var Service = mine(function (self, service_cls, opts) {
     } else {
         self.transport = new opts.transport();
         self.transport.open(self.url);
+    }
+
+    assert(self.protocol === undefined);
+    if (opts.protocol === undefined) {
+        self.protocol = new function () {
+            this.rpc_encode = function (msg) {
+                return msg.encode().toBuffer();
+            };
+            this.rpc_decode = function (cls, buf) {
+                return cls.decode(buf);
+            };
+            this.msg_encode = function (msg) {
+                return msg.encode().toBuffer();
+            };
+            this.msg_decode = function (cls, buf) {
+                return cls.decode(buf);
+            }
+        };
+    } else {
+        self.protocol = new opts.protocol();
     }
 
     assert(self.return_cls === undefined);
@@ -142,16 +162,16 @@ var Service = mine(function (self, service_cls, opts) {
     return new service_cls(function (method, req, callback) {
         var rpc_req = new self.rpc_message.Request({
             id: crypto.randomBytes(4).readUInt32LE(),
-            data: req.toBuffer(),
+            data: self.protocol.msg_encode(req),
             name: method
         });
 
-        self._processor[rpc_req.id] = function (data) {
-            callback(null, self.return_cls[method].decode(data));
+        self._processor[rpc_req.id] = function (buf) {
+            callback(null, self.protocol.msg_decode(self.return_cls[method], buf));
         };
 
         self.transport.send(
-            rpc_req.encode().toBuffer(), self._process, function (err) {
+            self.protocol.rpc_encode(rpc_req), self._process, function (err) {
                 if (err !== undefined)  {
                     delete self._processor[rpc_req.id];
                     callback(err, null);

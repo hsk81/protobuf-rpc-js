@@ -67,11 +67,24 @@ assert(reflector_svc.transport);
 assert(reflector_svc.transport.socket);
 
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
-    url: url, transport: function () {
+    protocol: function () {
+        this.rpc_encode = function (msg) {
+            return msg.encode().toBuffer();
+        };
+        this.rpc_decode = function (cls, buf) {
+            return cls.decode(buf);
+        };
+        this.msg_encode = function (msg) {
+            return msg.encode().toBuffer();
+        };
+        this.msg_decode = function (cls, buf) {
+            return cls.decode(buf);
+        }
+    },
+    transport: function () {
         this.open = function (url) {
             var WebSocket = require('ws');
             this.socket = new WebSocket(url);
-            this.socket.binaryType = 'arraybuffer';
         };
         this.send = function (buffer, msg_callback, err_callback) {
             this.socket.onmessage = function (ev) {
@@ -82,7 +95,8 @@ var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
             };
             this.socket.send(buffer);
         };
-    }
+    },
+    url: url
 });
 
 assert(calculator_svc);
