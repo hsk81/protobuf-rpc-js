@@ -8,7 +8,8 @@
     "ws": "0.*"
   },
   "devDependencies": {
-    "argparse": "1.*"
+    "argparse": "1.*",
+    "paperboy": "0.*"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "files": [
