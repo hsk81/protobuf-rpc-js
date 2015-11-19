@@ -62,9 +62,7 @@ wss.on('connection', function (ws) {
         var rpc_req, req, rpc_res, res;
 
         if (args.logging) {
-            console.log('[on:message]', data, {
-                binary: flags.binary, masked: flags.masked
-            });
+            console.log('[on:message]', data);
         }
         if (args.json_rpc) {
             rpc_req = Rpc.Request.decodeJSON(data);
