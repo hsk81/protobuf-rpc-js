@@ -117,3 +117,34 @@ For the next `10` seconds the client will keep invoking the corresponding functi
     dT[div]@0: 0.74399
 
 The RTTs start high with about 5.4ms (on my machine) apparently due the NodeJS' [V8 JavaScript Engine]'s initial on the fly optimizations, but very quickly go down to a sub-milli-second range. By increasing the numbers of the arguments, e.g. `--n-ack=2`, you can control the throughput of a particular method invocation (but which usually adversely effects the RTT latencies). For the detailed discussion of the performance characteristics see the `log/README.md` file.
+
+### Client Execution: js-www
+
+The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser supports; but you need first to run the corresponding `index.js` static server to be able to provide the `index.html` to a browser:
+
+    cd pb-rpc-js.git && ./example/client/js-www/index.js
+    Paper Server - listening on http://localhost:8080/
+
+Ensure that your `rpc-server` is still running and then open the `http://localhost:8080/`: the static file server `index.js` should produce an output similar to:
+
+    Paper Server - listening on http://localhost:8080/
+    [200] /
+    [200] /lib/dcodeIO/long.min.js
+    [200] /lib/dcodeIO/bytebuffer.min.js
+    [200] /lib/dcodeIO/protobuf.min.js
+    [200] /lib/dcodeIO/protobuf-rpc.min.js
+    [200] /protocol/api.proto
+    [200] /protocol/reflector.proto
+    [200] /protocol/calculator.proto
+
+If you reload then the `[200]` status codes might get replaced with `[304]` (implying caching). The page on `http://localhost:8080/` should simply be empty, but open up the console (via e.g. `F12`) and check the output (you may then also want to reload with `F5` to see the content of `console.log(..)` fully expanded):
+
+    (index):56 [on:ack] e {timestamp: "2015-11-19T07:25:17.665Z"} e {timestamp: "2015-11-19T07:25:17.665Z"} null
+    (index):65 [on:add] e {lhs: 2, rhs: 3} e {value: 5} null
+    (index):72 [on:sub] e {lhs: 2, rhs: 3} e {value: -1} null
+    (index):79 [on:mul] e {lhs: 2, rhs: 3} e {value: 6} null
+    (index):86 [on:div] e {lhs: 2, rhs: 3} e {value: 0} null
+
+So apparently acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same amount of log line on you `rpc-server`s output (if logging is on).
+
+
