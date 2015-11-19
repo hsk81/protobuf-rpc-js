@@ -63,6 +63,6 @@ The fully qualified `name` (FQN) of an `Rpc.Request` indicates which method on w
  
   + The random (or sequential) `id` number is a (temporary) unique ID of the request, which helps to deliver the response. Since it is a `uint32` it should be more than enough, especially because it is assumed that many but relatively short lived requests will be dispatched, which should be answered within a few milli-seconds (freeing the `id` for re-use).
 
-  + The `data` bytes carry an serialization of the current requests, where for `.Reflector.Service.ack` if simply would be the byte representation of the timestamp.
+  + The `data` bytes carry an serialization of the current requests, where for e.g. `.Reflector.Service.ack` it simply would be the byte representation of the timestamp.
 
 This [ProtoBuf.Rpc] JS library offers an abstraction for RPC services on the JS *client side* (NodeJS and browser compatible), whereas for the *server side*  only simple and functional examples in NodeJS, Browser Python and QT/C++ have been provided.
