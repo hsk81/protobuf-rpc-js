@@ -23,21 +23,21 @@ Actually the [Protocol Buffers] leave the actual implementation of the RCP servi
 
 This [ProtoBuf.Rpc.js] library attempts to fill this gap using *only* a minimal and lightweight yet extensible approach. Following concepts and technologies have been used:
 
-       +-------------------------------------------------+
-       | RPC Service : Invocation of aN RPC method       |
-       +-------------------------------------------------+
-       | Transport   : WebSockets (or AJAX)              |  JS Client
-       +-------------------------------------------------+
-       | Protocol    : Binary buffers (or JSON, Base64)  |
-       +-------------------------------------------------+
-              |v|                    |^|
-              |v| #1. RPC_REQ        |^| #2. RPC_RES 
-              |v|                    |^|
-       +-------------------------------------------------+
-       | Protocol    : Binary buffers (or JSON, Base64)  |
-       +-------------------------------------------------+  Any Server
-       | RPC Service : Execution of an RPC method        |
-       +-------------------------------------------------+
+   +-------------------------------------------------+
+   | RPC Service : Invocation of aN RPC method       |
+   +-------------------------------------------------+
+   | Transport   : WebSockets (or AJAX)              |  JS Client
+   +-------------------------------------------------+
+   | Protocol    : Binary buffers (or JSON, Base64)  |
+   +-------------------------------------------------+
+          |v|                    |^|
+          |v| #1. RPC_REQ        |^| #2. RPC_RES 
+          |v|                    |^|
+   +-------------------------------------------------+
+   | Protocol    : Binary buffers (or JSON, Base64)  |
+   +-------------------------------------------------+  Any Server
+   | RPC Service : Execution of an RPC method        |
+   +-------------------------------------------------+
  
 As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS Client upon which the server answers with a RPC_RES response. These two messages are defined as:
 
@@ -182,7 +182,7 @@ var ApiFactory = ProtoBuf.loadProtoFile({
     root: path.join(__dirname, 'path/to/protocol'), file: 'api.proto'});
 assert(ApiFactory);
 
-var Api = ApiFactory.build();
+var Api = ApiFactory.build(); // will dyn. build *all* imports
 assert(Api);
 ```
 
@@ -205,7 +205,6 @@ reflector_svc.transport.socket.on('open', function () {
     var req = new Api.Reflector.AckRequest({
         timestamp: new Date().toISOString()
     });
-    
     reflector_svc.ack(req, function (error, res) {
         if (error !== null) throw error;
         assert(res.timestamp);
