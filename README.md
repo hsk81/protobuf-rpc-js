@@ -343,12 +343,12 @@ cd pb-rpc-js.git && ./example/client/js/rpc-client.js --json-rpc
 Then the server should start producing and output similar to:
 
 ```json
-[on:message] {"name":".Reflector.Service.ack","id":3420329314,"data":"ChgyMDE1LTExLTE5VDA5OjEwOjU2Ljk5MVo="}
-[on:message] {"name":".Calculator.Service.add","id":3269228487,"data":"CN4BECc="}
-[on:message] {"name":".Calculator.Service.sub","id":3945292798,"data":"CMYBEG0="}
-[on:message] {"name":".Calculator.Service.mul","id":373609284,"data":"CKYBEJgB"}
-[on:message] {"name":".Calculator.Service.div","id":2352804529,"data":"CEcQlQE="}
-[on:message] {"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
+{"name":".Reflector.Service.ack","id":3420329314,"data":"ChgyMDE1LTExLTE5VDA5OjEwOjU2Ljk5MVo="}
+{"name":".Calculator.Service.add","id":3269228487,"data":"CN4BECc="}
+{"name":".Calculator.Service.sub","id":3945292798,"data":"CMYBEG0="}
+{"name":".Calculator.Service.mul","id":373609284,"data":"CKYBEJgB"}
+{"name":".Calculator.Service.div","id":2352804529,"data":"CEcQlQE="}
+{"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
 ```
 
 As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as you servers understand your changes of course).
