@@ -1,7 +1,5 @@
 # ProtoBuf.Rpc: Lightweight RPC for JavaScript using Protocol Buffers
 
-Date: 19th Nov'15, Hasan Karahan
-
 The [ProtoBuf] library allows in JavaScript (JS) to create messages using Google's [Protocol Buffers], where the latter define in addition to messages also so called remote procedure call (RPC) services, i.e.
 
     package Reflector;
