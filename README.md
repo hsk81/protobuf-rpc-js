@@ -29,9 +29,9 @@ service Service {
 }
 ```
 
-Here the RPC service has been named `Reflector.Service`, but any other designation is possible: It provides only a single method `ack`, which takes an `AckRequest` and returns an `AckResult`. Both structure contain a single `timestamp` field, where the result timestamp is simply a copy of the request's timestamp. Therefore the `ack` method allows us to measure the round trip time (RTT) of an RCP implementation.
+Here the RPC service has been named `Reflector.Service`, but any other designation is possible: It provides only a single method `ack`, which takes an `AckRequest` and returns an `AckResult`. Both structures contain a single `timestamp` field, where the result's timestamp is simply a copy of the request's timestamp. Therefore, the `ack` method allows us to measure the round trip time (RTT) of an RCP implementation.
 
-Actually the [Protocol Buffers] leave the actual implementation of the RCP services open; acccodingly, the [ProtoBuf.js] JS library does not provide a corresponding solution either. This is quite understandable since depending on the context and given requirements a particular approach might be appropriate or not.
+Actually, the [Protocol Buffers] leave the actual implementation of the RCP services open. Accordingly, the [ProtoBuf.js] JS library does not provide a corresponding solution either. This is quite understandable since depending on the context and given requirements a particular approach might be appropriate or not.
 
 This [ProtoBuf.Rpc.js] library attempts to fill this gap using *only* a minimal and lightweight yet extensible approach. Following concepts and technologies have been used:
 
@@ -51,7 +51,7 @@ This [ProtoBuf.Rpc.js] library attempts to fill this gap using *only* a minimal 
        | RPC Service : Execution of an RPC method        |
        +-------------------------------------------------+
  
-As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS Client upon which the server answers with a RPC_RES response. These two messages are defined as:
+As you see the RPC invocation follows a simple request-response pattern, where the initial RPC_REQ request is triggered by the JS client upon which the server answers with a RPC_RES response. These two messages are defined as:
 
 ```proto
 message Rpc {
@@ -67,11 +67,11 @@ message Rpc {
 }
 ```
 
-The fully qualified `name` (FQN) of an `Rpc.Request` indicates which method on which service shall be executed on the server side, e.g. `.Reflector.Service.ack`.
+The fully qualified `name` (FQN) of an `Rpc.Request` indicates, which method on which service shall be executed (on the server side) e.g. `.Reflector.Service.ack`.
 
- + We chose to use string `name`s instead of working with e.g. corresponding hash values, mainly to ease debugging and logging. However in both of these use cases it is very easily possible to simply do a hash value to method name reverse lookup from a (centralized) name service. To avoid such an additional burden (at least as of now) FQNs are being used.
+ + We chose to use string `name`s instead of working with e.g. hash values, mainly to ease debugging and logging. However in both of these use cases it is very easily possible to simply do a hash value to method name reverse lookup. To avoid such a lookup FQNs are being used.
  
-  + The random (or sequential) `id` number is a (temporary) unique ID of the request, which helps to deliver the response. Since it is a `uint32` it should be more than enough, especially because it is assumed that many but relatively short lived requests will be dispatched, which should be answered within a few milli-seconds (freeing the `id` for re-use).
+  + The random `id` number is a (temporary) unique ID of the request, allowing the response to be delivered to the correct handler. Since it is a `uint32` it's should be sufficient, especially because it is assumed that many - but relatively short lived - requests will be dispatched, which should then be answered within a few milli-seconds (freeing the `id`s for re-use).
 
   + The `data` bytes carry a serialization of the current request, where for e.g. `.Reflector.Service.ack` it simply would be the byte representation of the timestamp.
 
@@ -99,15 +99,15 @@ cd pb-rpc-js.git && ./example/server/js/rpc-server.js --logging
 ```
 ### Client Execution
 
-Start the client and enable the addition, subtraction, multiplication and division methods of the `Calculator` service and acknowledgment of the `Reflector` service:
+Start the client and enable the addition, subtraction, multiplication and division methods of the `Calculator` service and acknowledgments of the `Reflector` service:
 ```bash
 cd pb-rpc-js.git && ./example/client/js/rpc-client.js --n-add=1 --n-sub=1 --n-mul=1 --n-div=1 --n-ack=1
 ```
-Since the provided values `1` are the defaults anyway, you could have also simply run:
+Since the provided values `1` are the defaults anyway, you can also simply run:
 ```bash
 cd pb-rpc-js.git && ./example/client/js/rpc-client.js
 ```
-For the next `10` seconds the client will keep invoking the corresponding functionality on the server side, measure the RTT in milli-seconds and log them to the standard output:
+For the next `10` seconds the client will keep invoking the corresponding functionality on the server side, measure the RTT in (sub-)milli-seconds and log them to the standard output:
  
     dT[ack]@0: 5.464066
     dT[ack]@0: 2.234051
@@ -126,16 +126,16 @@ For the next `10` seconds the client will keep invoking the corresponding functi
     dT[ack]@0: 2.027208
     dT[div]@0: 0.74399
 
-The RTTs start high with about 5.4ms (on my machine) apparently due the NodeJS' [V8 JavaScript Engine]'s initial on the fly optimizations, but very quickly go down to a sub-milli-second range. By increasing the numbers of the arguments, e.g. `--n-ack=2`, you can control the throughput of a particular method invocation (but which usually adversely effects the RTT latencies). For the detailed discussion of the performance characteristics see the `log/README.md` file.
+The RTTs start high with about 5.4ms (on my machine) apparently due the NodeJS' [V8 JavaScript Engine]'s initial on the fly optimizations. But they go down very quickly to a sub-milli-second range. By increasing the numbers assigned to the arguments, by e.g. setting `--n-ack=2`, you can control the throughput of a particular method invocation (but which usually adversely effects the RTT latencies). For the detailed discussion of the performance characteristics see the `log/README.md` file.
 
 ### Client Execution: js-www
 
-The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser supports; but you need first to run the corresponding `index.js` static server to be able to provide the `index.html` to a browser:
+The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser supports. But you need first to run the corresponding `index.js` static server to be able to provide the `index.html` to a browser:
 
 ```bash
 cd pb-rpc-js.git && ./example/client/js-www/index.js
 ```
-Ensure that your `rpc-server` is still running and then open the `http://localhost:8080/`: the static file server `index.js` should produce an output similar to:
+Ensure that your `rpc-server` is still running and then open the `http://localhost:8080` address: On the console the static file server `index.js` should produce an output similar to:
 
     Paper Server - listening on http://localhost:8080/
     [200] /
@@ -147,7 +147,7 @@ Ensure that your `rpc-server` is still running and then open the `http://localho
     [200] /protocol/reflector.proto
     [200] /protocol/calculator.proto
 
-If you reload then the `[200]` status codes might get replaced with `[304]` (implying caching). The page on `http://localhost:8080/` should simply be empty, but open up the console (via e.g. `F12`) and check the output (you may then also want to reload with `F5` to see the content of `console.log(..)` fully expanded):
+If you reload then the `[200]` status codes might get replaced with `[304]` (implying caching). The page on `http://localhost:8080` should simply be empty, but opening up the console (via e.g. `F12`) and checking the output you may discover:
 
     (index):56 [on:ack] e {timestamp: "2015-11-19T07:25:17.665Z"} e {timestamp: "2015-11-19T07:25:17.665Z"} null
     (index):65 [on:add] e {lhs: 2, rhs: 3} e {value: 5} null
@@ -155,11 +155,11 @@ If you reload then the `[200]` status codes might get replaced with `[304]` (imp
     (index):79 [on:mul] e {lhs: 2, rhs: 3} e {value: 6} null
     (index):86 [on:div] e {lhs: 2, rhs: 3} e {value: 0} null
 
-So apparently acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same amount of log line on you `rpc-server`protos output (if logging is on).
+So apparently, acknowledgment and calculations worked as expected: The content of the left hand side curly brackets represent the request payload (i.e. `Rpc.Request.data`) and the content of the right hand side curly brackets represent the response payload (i.e. `Rpc.Reponse.data`). You should have also observed the same number of log lines on you `rpc-server`protos output (if logging is on).
 
 ## Message wrapping: Rpc.Request and Rpc.Response
 
-Both `Rpc.Request` and `Rpc.Response` have `data` field, which is a list of bytes to contains any kind of custom message: For example, when a `Reflector.AckRequest` is sent and `Reflector.AckResponse` is received, then they are packing into `Rpc.Request` and `Rpc.Response` like:
+Both `Rpc.Request` and `Rpc.Response` have `data` fields, which is a list of bytes to contain any kind of custom message: For example, when a `Reflector.AckRequest` is sent and `Reflector.AckResponse` is received, then they are packed into `Rpc.Request` and `Rpc.Response` like:
 
 Rpc.Request: 
 
@@ -177,7 +177,7 @@ By default both the request and response messages are sent using a compact binar
 
 ## Usage
 
-In the following the JS usage of the [ProtoBuf.Rpc.js] is shown, for this to work, the `api.proto` protocol file needs to be available. The `api.proto` simply imports the `reflector.proto` and `calculator.proto` files:
+In the following the JS usage of the [ProtoBuf.Rpc.js] is shown: For this to work, the `api.proto` protocol file needs to be available; it simply imports the `reflector.proto` and `calculator.proto` files:
 
 ```proto
 import public "reflector.proto";
@@ -191,7 +191,7 @@ var ProtoBuf = require('protobufjs'),
     ProtoBufRpc = require('protobufjs-rpc');
 
 var ApiFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, 'path/to/protocol'), file: 'api.proto'});
+    root: 'path/to/protocols', file: 'api.proto'});
 assert(ApiFactory);
 
 var Api = ApiFactory.build(); // will dyn. build *all* imports
@@ -200,7 +200,7 @@ assert(Api);
 
 ### Instantiate the `reflector_svc` service
 
-Ensure that the `rpc-server` is running, when this code gets executed:
+Ensure that the `rpc-server` is running, when this code gets to run:
 
 ```js
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
@@ -210,7 +210,7 @@ var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
 
 ### Invoke the `reflector_svc.ack(..)` RPC
 
-When the RPC call is executed immediately after creating the `reflector_svc` the it is necessary to wait for the `open` message on the corresponding `socket`. Please note that the invocation is asynchronous:
+When the RPC call is executed immediately after creating the `reflector_svc`, then it is necessary to wait for the `open` message on the corresponding `socket`. Please note, that the invocation is asynchronous:
 
 ```js
 reflector_svc.transport.socket.on('open', function () {
@@ -226,7 +226,7 @@ reflector_svc.transport.socket.on('open', function () {
 
 ### Process `reflector_svc.ack(..)` on the server side
 
-As already mentioned this [ProtoBuf.Rpc.js] provides abstractions for the client side only. Therefore on the server side you are on your own: a very simple way to process the requests is to check them in a switch statement:
+As already mentioned this [ProtoBuf.Rpc.js] libraryr provides abstractions for the client side only. Therefore, on the server side you are on your own - a straight forward way to process the requests on the server is to check them in a switch statement and run the corresponding functionality:
 
 ```js
 ws.on('message', function (data) {
@@ -249,13 +249,15 @@ ws.on('message', function (data) {
 });
 ```
 
-    1. Decode RPC request;
-    2. Switch based on request name `.Reflector.Service.ack`;
-    3. Decode RPC request message `Api.Reflector.AckRequest`;
-    4. Create an `Api.Reflector.AckResult` message;
-    5. Encode `Api.Reflector.AckResult.data` field;
-    6. Create a `Rpc.Response` message;
-    7. Send message within a buffer;
+Serve side:
+
+    1. decode RPC request;
+    2. switch based on request name, e.g. `.Reflector.Service.ack`;
+    3. decode RPC request message , e.g.`Api.Reflector.AckRequest`;
+    4. create e.g. an `Api.Reflector.AckResult` message;
+    5. encode the `Api.Reflector.AckResult.data` field;
+    6. create an `Rpc.Response` message;
+    7. send message within a buffer;
 
 ## Servers alternatives
 
@@ -265,7 +267,7 @@ A QT/C++ version of `rpc-server` with `<QtWebSockets>` has been implemented.
  
 #### Build:
 
-For the following to work you require a `QT5+` installation with `qmake` in the bin path; further the [protobuf3] package includes and libraries need to be available:
+For the following to work you require a `QT5+` installation with `qmake` in the bin path; further the [protobuf3] package includes libraries which are required for compilation and linkage:
 
 ```bash
 cd pb-rpc-js.git && make server-cpp
@@ -279,7 +281,7 @@ Once compilation is done, you can run it with e.g.:
 cd pb-rpc-js.git && ./example/server/cpp/rpc-server --logging
 ```
 
-Ensure that the NodeJS `rpc-server` has been closed, otherwise the C++ server will fail to listen to the corresponding port.
+Ensure that the NodeJS `rpc-server` has been closed, otherwise the C++ `rpc-server` will fail to listen to the corresponding port.
 
 ### Python `rpc-server`:
 
@@ -288,7 +290,7 @@ A Python of `rpc-server` with [tornado] has been implemented.
 
 #### Build:
 
-You need a modern Python 2 installed on you system; *plus* you need the language binding for your particular version of Python for Protocol Buffers syntax version `3`! Unfortunately it does not seem to be available on the [PIP] repository; therefore you have to install e.g. [python2-protobuf3] using your package manager globally. Then you can run:
+You need a Python 2 installed on your system; *plus* you need the language binding for your particular version of Python for Protocol Buffers syntax version `3`! Unfortunately, it does not seem to be available on the [PIP] repository; therefore you have to install e.g. [python2-protobuf3] using your package manager globally. Then you can run:
 
 ```bash
 cd pb-rpc-js.git && make server-py
@@ -296,7 +298,7 @@ cd pb-rpc-js.git && make server-py
 
 #### Run:
 
-Once compilation is done, you can run it with e.g.:
+Once compilation is done, you can run it with:
 
 ```bash
 cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
@@ -304,7 +306,7 @@ cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
 
 ## Protocol Alternatives
 
-When you instantiate e.g. the `reflector_svc` you can provide an additional `protocol` parameter, like:
+When you instantiate the `reflector_svc` you can provide an additional `protocol` parameter, like:
 
 ```js
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
@@ -328,7 +330,7 @@ var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
 });
 ```
 
-This allows you to change the encoding on the wire from binary to e.g. `JSON` as shown above; actually the NodeJS server and client both have a `--json-rpc` flag -- run them with the flag switche on:
+This allows you to change the encoding on the wire from binary to e.g. `JSON` as shown above; actually the NodeJS server and client both have a `--json-rpc` flag -- run them with the flag switched on:
 
 ```bash
 cd pb-rpc-js.git && ./example/server/js/rpc-server.js --json-rpc -l
@@ -340,7 +342,7 @@ and for the client:
 cd pb-rpc-js.git && ./example/client/js/rpc-client.js --json-rpc
 ```
 
-Then the server should start producing and output similar to:
+Then the server should start producing an output similar to:
 
 ```json
 {"name":".Reflector.Service.ack","id":3420329314,"data":"ChgyMDE1LTExLTE5VDA5OjEwOjU2Ljk5MVo="}
@@ -351,7 +353,7 @@ Then the server should start producing and output similar to:
 {"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
 ```
 
-As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as you servers understand your changes of course).
+As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you might need, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as your servers understand your changes of course).
 
 The `protocol` layer supports two further functions:
 
@@ -367,11 +369,11 @@ var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
 });
 ```
 
-The `rpc_*` function modify the RPC frame message, while the `msg_*` functions modify the actual message content.
+The `rpc_*` functions modify the RPC frame messages, while the `msg_*` functions modify the actual message's content.
 
 ## Transport Alternatives
 
-When you instantiate e.g. the `reflector_svc` you can provide an additional `transport` parameter, like:
+When you instantiate the `reflector_svc` you can further provide an additional `transport` parameter, like:
 
 ```js
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
