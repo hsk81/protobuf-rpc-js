@@ -66,18 +66,6 @@ function map_to (service_cls) {
 var Service = mine(function (self, service_cls, opts) {
     assert(service_cls, 'Service class required');
 
-    assert(self._processor === undefined);
-    self._processor = {};
-
-    assert(self._process === undefined);
-    self._process = function (buf) {
-        var rpc_res = self.protocol.rpc_decode(self.rpc_message.Response, buf);
-        if (self._processor[rpc_res.id]) {
-            self._processor[rpc_res.id](rpc_res.data);
-            delete self._processor[rpc_res.id];
-        }
-    };
-
     if (opts === undefined) {
         opts = {};
     }
@@ -88,13 +76,14 @@ var Service = mine(function (self, service_cls, opts) {
     } else {
         self.url = opts.url;
     }
+    service_cls.prototype.url = self.url;
+    assert(service_cls.prototype.url);
 
     assert(self.transport === undefined);
     if (opts.transport === undefined) {
         self.transport = new function () {
             this.open = function (url) {
                 this.socket = new WebSocket(url);
-             // this.socket.binaryType = 'arraybuffer';
             };
             this.send = function (buffer, msg_callback, err_callback) {
                 this.socket.onmessage = function (ev) {
@@ -111,6 +100,8 @@ var Service = mine(function (self, service_cls, opts) {
         self.transport = new opts.transport();
         self.transport.open(self.url);
     }
+    service_cls.prototype.transport = self.transport;
+    assert(service_cls.prototype.transport);
 
     assert(self.protocol === undefined);
     if (opts.protocol === undefined) {
@@ -131,6 +122,8 @@ var Service = mine(function (self, service_cls, opts) {
     } else {
         self.protocol = new opts.protocol();
     }
+    service_cls.prototype.protocol = self.protocol;
+    assert(service_cls.prototype.protocol);
 
     assert(self.return_cls === undefined);
     if (opts.return_cls === undefined) {
@@ -156,8 +149,21 @@ var Service = mine(function (self, service_cls, opts) {
         self.rpc_message = opts.rpc_message;
     }
 
-    service_cls.prototype.transport = self.transport;
-    assert(service_cls.prototype.transport);
+    assert(self._do_msg === undefined);
+    self._do_msg = {};
+    assert(self._on_msg === undefined);
+    self._on_msg = function (buf) {
+        var rpc_res = self.protocol.rpc_decode(self.rpc_message.Response, buf);
+        if (self._do_msg[rpc_res.id]) {
+            self._do_msg[rpc_res.id](rpc_res.data);
+            delete self._do_msg[rpc_res.id];
+        }
+    };
+    assert(self._on_err === undefined);
+    self._on_err = function (err, id) {
+        delete self._do_msg[id];
+        callback(err, null);
+    };
 
     return new service_cls(function (method, req, callback) {
         var rpc_req = new self.rpc_message.Request({
@@ -165,18 +171,14 @@ var Service = mine(function (self, service_cls, opts) {
             data: self.protocol.msg_encode(req),
             name: method
         });
-
-        self._processor[rpc_req.id] = function (buf) {
+        self._do_msg[rpc_req.id] = function (buf) {
             callback(null, self.protocol.msg_decode(self.return_cls[method], buf));
         };
-
         self.transport.send(
-            self.protocol.rpc_encode(rpc_req), self._process, function (err) {
-                if (err !== undefined)  {
-                    delete self._processor[rpc_req.id];
-                    callback(err, null);
-                }
-            });
+            self.protocol.rpc_encode(rpc_req), self._on_msg, function (err) {
+                if (err) self._on_err(err, rpc_req.id);
+            }
+        );
     });
 });
 
