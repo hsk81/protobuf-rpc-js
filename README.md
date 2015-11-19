@@ -289,3 +289,54 @@ Once compilation is done, you can run it with e.g.:
 ```bash
 cd pb-rpc-js.git && ./example/server/py/rpc-server --logging
 ```
+
+## Protocol Alternatives
+
+When you instantiate e.g. the `reflector_svc` you can provide an additional `protocol` parameter, like:
+
+```js
+var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+    protocol: function () {
+        this.rpc_encode = function (msg) {
+            if (args.json_rpc) {
+                return msg.encodeJSON();
+            } else {
+                return msg.toBuffer();
+            }
+        };
+        this.rpc_decode = function (cls, buf) {
+            if (args.json_rpc) {
+                return cls.decodeJSON(buf);
+            } else {
+                return cls.decode(buf);
+            }
+        };
+    },
+    url: url
+});
+```
+
+This allows you to change the encoding on the wire from binary to e.g. `JSON` as shown above; actually the NodeJS server and client both have a `--json-rpc` flag -- run them with the flag switche on:
+
+```bash
+cd pb-rpc-js.git && ./example/server/js/rpc-server.js --json-rpc -l
+```
+
+and for the client:
+
+```bash
+cd pb-rpc-js.git && ./example/client/js/rpc-client.js --json-rpc
+```
+
+Then the server should start producing and output similar to:
+
+```json
+[on:message] {"name":".Reflector.Service.ack","id":3420329314,"data":"ChgyMDE1LTExLTE5VDA5OjEwOjU2Ljk5MVo="}
+[on:message] {"name":".Calculator.Service.add","id":3269228487,"data":"CN4BECc="}
+[on:message] {"name":".Calculator.Service.sub","id":3945292798,"data":"CMYBEG0="}
+[on:message] {"name":".Calculator.Service.mul","id":373609284,"data":"CKYBEJgB"}
+[on:message] {"name":".Calculator.Service.div","id":2352804529,"data":"CEcQlQE="}
+[on:message] {"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
+```
+
+As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` here (as long as you servers understand your changes of course).
