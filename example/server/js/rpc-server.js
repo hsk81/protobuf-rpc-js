@@ -19,7 +19,7 @@ parser.addArgument(['-l', '--logging'], {
     action: 'storeTrue'
 });
 parser.addArgument(['-p', '--port'], {
-    help: 'Server Port [default: 8088]', defaultValue: '8088',
+    help: 'Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
 });
 parser.addArgument(['--json-rpc'], {
