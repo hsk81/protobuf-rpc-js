@@ -10,11 +10,6 @@ build: \
 build-npm:
 	npm install
 
-build-client-js-www:
-	cd example/client/js-www && rm env -rf && mkdir -p env
-	cd example/client/js-www && virtualenv2 -p /usr/bin/python2 env/
-	cd example/client/js-www && env/bin/python setup.py install
-
 build-server-py: build-py.pb
 	cd example/server/py && rm env -rf && mkdir -p env
 	cd example/server/py && virtualenv2 --system-site-packages -p /usr/bin/python2 env/
@@ -23,7 +18,6 @@ build-server-py: build-py.pb
 build-py.pb:
 	cd example/protocol && touch __init__.py
 	cd example/protocol && protoc --proto_path=. --python_out=. *.proto
-
 build-cpp.pb:
 	cd example/protocol && protoc --proto_path=. --cpp_out=. *.proto
 
@@ -31,21 +25,20 @@ build-cpp.pb:
 ###############################################################################
 
 clean: \
-	clean-lib clean-client-js-www clean-server-py
+	clean-lib clean-server-py
+
 clean-lib:
 	rm node_modules -rf
 
-clean-client-js-www:
-	rm example/client/js-www/{build,dist,env} -rf
-	rm example/client/js-www/*.egg-info -rf
-	rm example/client/js-www/protocol/*_pb2.py -f
-	rm example/client/js-www/protocol/__init__.py -f
+clean-protocol:
+	rm example/protocol/__init__.py -f
+	rm example/protocol/*_pb2.py -f
+	rm example/protocol/*_pb.cc -f
+	rm example/protocol/*_pb.h -f
 
 clean-server-py:
 	rm example/server/py/{build,dist,env} -rf
 	rm example/server/py/*.egg-info -rf
-	rm example/server/py/protocol/*_pb2.py -f
-	rm example/server/py/protocol/__init__.py -f
 
 ###############################################################################
 ###############################################################################
