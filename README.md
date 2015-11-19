@@ -249,7 +249,7 @@ ws.on('message', function (data) {
 });
 ```
 
-Serve side:
+What happens here?
 
     1. decode RPC request;
     2. switch based on request name, e.g. `.Reflector.Service.ack`;
