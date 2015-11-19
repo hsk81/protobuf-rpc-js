@@ -339,4 +339,4 @@ Then the server should start producing and output similar to:
 [on:message] {"name":".Calculator.Service.add","id":2456212322,"data":"CIQBEMYB"}
 ```
 
-As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` here (as long as you servers understand your changes of course).
+As you see the wire protocol is now JSON! The `protocol` parameter expects a function, and it allows you to build any kind of middle ware you can imagine, e.g. for compression, authentication, profiling etc. - in principle you can completely replace the `Rpc.Request` and `Rpc.Response` message wrappers here (as long as you servers understand your changes of course).
