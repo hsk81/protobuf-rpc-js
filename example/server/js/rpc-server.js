@@ -3,7 +3,8 @@
 
 var ArgumentParser = require('argparse').ArgumentParser,
     ProtoBuf = require('protobufjs'),
-    WebSocket = require('ws');
+    WebSocket = require('ws'),
+    Http = require('http');
 
 var assert = require('assert'),
     path = require('path');
@@ -12,19 +13,22 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Server', version: '0.0.1'
+    addHelp: true, description: 'RPC Server', version: '1.0.0'
 });
 parser.addArgument(['-l', '--logging'], {
-    help: 'Message logging [default: false]', defaultValue: false,
+    help: 'Logging [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
-parser.addArgument(['-p', '--port'], {
-    help: 'Server Port [default: 8088]', defaultValue: 8088,
+parser.addArgument(['--ws-port'], {
+    help: 'WS Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
 });
-
-parser.addArgument(['-j', '--protocol-json'], {
-    help: 'JSON-RPC protocol [default: false]', defaultValue: false,
+parser.addArgument(['--xhr-port'], {
+    help: 'XHR Server Port [default: 8089]', defaultValue: 8089,
+    nargs: '?'
+});
+parser.addArgument(['-j', '--json-protocol'], {
+    help: 'JSON protocol [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
 
@@ -118,7 +122,7 @@ function process(data, opts) {
 ///////////////////////////////////////////////////////////////////////////////
 
 var wss = new WebSocket.Server({
-    port: args.port
+    port: args.ws_port
 });
 
 wss.on('connection', function (ws) {
@@ -128,13 +132,35 @@ wss.on('connection', function (ws) {
             console.log('[on:message]', data);
         }
 
-        if (args.protocol_json) {
+        if (args.json_protocol) {
             ws.send(process(data, {protocol: 'json'}));
         } else {
             ws.send(process(data));
         }
     });
 });
+
+///////////////////////////////////////////////////////////////////////////////
+
+var http = Http.createServer(function(req, res) {
+
+    var buffers = [];
+    req.on('data', function (data) {
+        buffers.push(data)
+    });
+
+    req.on('end', function () {
+        var buffer = Buffer.concat(buffers);
+
+        if (args.logging) {
+            console.log('[on:message]', buffer);
+        }
+
+        res.end(process(buffer).toString('binary'));
+    });
+});
+
+http.listen(args.xhr_port);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
