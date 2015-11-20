@@ -22,8 +22,9 @@ parser.addArgument(['-p', '--port'], {
     help: 'Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
 });
-parser.addArgument(['--json-rpc'], {
-    help: 'JSON-RPC encoding [default: false]', defaultValue: false,
+
+parser.addArgument(['-j', '--protocol-json'], {
+    help: 'JSON-RPC protocol [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
 
@@ -53,71 +54,84 @@ assert.ok(Api);
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+function process(data, opts) {
+    var rpc_req, req, rpc_res, res;
+
+    if (opts && opts.protocol === 'json') {
+        rpc_req = Rpc.Request.decodeJSON(data);
+    } else {
+        rpc_req = Rpc.Request.decode(data);
+    }
+
+    switch (rpc_req.name) {
+        case '.Reflector.Service.ack':
+            req = Api.Reflector.AckRequest.decode(rpc_req.data);
+            res = new Api.Reflector.AckResult({
+                timestamp: req.timestamp
+            });
+            break;
+
+        case '.Calculator.Service.add':
+            req = Api.Calculator.AddRequest.decode(rpc_req.data);
+            res = new Api.Calculator.AddResult({
+                value: req.lhs + req.rhs
+            });
+            break;
+
+        case '.Calculator.Service.sub':
+            req = Api.Calculator.SubRequest.decode(rpc_req.data);
+            res = new Api.Calculator.SubResult({
+                value: req.lhs - req.rhs
+            });
+            break;
+
+        case '.Calculator.Service.mul':
+            req = Api.Calculator.MulRequest.decode(rpc_req.data);
+            res = new Api.Calculator.MulResult({
+                value: req.lhs * req.rhs
+            });
+            break;
+
+        case '.Calculator.Service.div':
+            req = Api.Calculator.DivRequest.decode(rpc_req.data);
+            res = new Api.Calculator.DivResult({
+                value: Math.floor(req.lhs / req.rhs)
+            });
+            break;
+
+        default:
+            throw(new Error(rpc_req.name + ': not supported'));
+    }
+
+    rpc_res = new Rpc.Response({
+        id: rpc_req.id, data: res.toBuffer()
+    });
+
+    if (opts && opts.protocol === 'json') {
+        return rpc_res.encodeJSON();
+    } else {
+        return rpc_res.toBuffer();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 var wss = new WebSocket.Server({
     port: args.port
 });
 
 wss.on('connection', function (ws) {
     ws.on('message', function (data, flags) {
-        var rpc_req, req, rpc_res, res;
 
         if (args.logging) {
             console.log('[on:message]', data);
         }
-        if (args.json_rpc) {
-            rpc_req = Rpc.Request.decodeJSON(data);
+
+        if (args.protocol_json) {
+            ws.send(process(data, {protocol: 'json'}));
         } else {
-            rpc_req = Rpc.Request.decode(data);
-        }
-
-        switch (rpc_req.name) {
-            case '.Reflector.Service.ack':
-                req = Api.Reflector.AckRequest.decode(rpc_req.data);
-                res = new Api.Reflector.AckResult({
-                    timestamp: req.timestamp
-                });
-                break;
-
-            case '.Calculator.Service.add':
-                req = Api.Calculator.AddRequest.decode(rpc_req.data);
-                res = new Api.Calculator.AddResult({
-                    value: req.lhs + req.rhs
-                });
-                break;
-
-            case '.Calculator.Service.sub':
-                req = Api.Calculator.SubRequest.decode(rpc_req.data);
-                res = new Api.Calculator.SubResult({
-                    value: req.lhs - req.rhs
-                });
-                break;
-
-            case '.Calculator.Service.mul':
-                req = Api.Calculator.MulRequest.decode(rpc_req.data);
-                res = new Api.Calculator.MulResult({
-                    value: req.lhs * req.rhs
-                });
-                break;
-
-            case '.Calculator.Service.div':
-                req = Api.Calculator.DivRequest.decode(rpc_req.data);
-                res = new Api.Calculator.DivResult({
-                    value: Math.floor(req.lhs / req.rhs)
-                });
-                break;
-
-            default:
-                throw(new Error(rpc_req.name + ': not supported'));
-        }
-
-        rpc_res = new Rpc.Response({
-            id: rpc_req.id, data: res.toBuffer()
-        });
-
-        if (args.json_rpc) {
-            ws.send(rpc_res.encodeJSON());
-        } else {
-            ws.send(rpc_res.toBuffer());
+            ws.send(process(data));
         }
     });
 });

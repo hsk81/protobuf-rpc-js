@@ -21,8 +21,9 @@ parser.addArgument(['--host'], {
 parser.addArgument(['--port', '-p'], {
     help: 'Server Port [default: 8088]', defaultValue: '8088', nargs: '?'
 });
-parser.addArgument(['--json-rpc'], {
-    help: 'JSON-RPC encoding  [default: false]', defaultValue: false,
+
+parser.addArgument(['-j', '--protocol-json'], {
+    help: 'JSON-RPC protocol [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
 
