@@ -12,14 +12,16 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Client', version: '0.0.1'
+    addHelp: true, description: 'RPC Client', version: '1.0.0'
 });
 
 parser.addArgument(['--host'], {
-    nargs: '?', help: 'Server Host', defaultValue: 'localhost'
+    help: 'Server Host [default: localhost]', defaultValue: 'localhost',
+    nargs: '?'
 });
 parser.addArgument(['--port', '-p'], {
-    help: 'Server Port [default: 8088]', defaultValue: '8088', nargs: '?'
+    help: 'Server Port [default: 8088]', defaultValue: 8088,
+    nargs: '?'
 });
 
 parser.addArgument(['-j', '--protocol-json'], {
@@ -28,16 +30,16 @@ parser.addArgument(['-j', '--protocol-json'], {
 });
 
 parser.addArgument(['-a', '--n-add'], {
-    nargs: '?', help: 'ADD Workers', defaultValue: 1
+    nargs: '?', help: 'ADD Workers', defaultValue: 0
 });
 parser.addArgument(['-s', '--n-sub'], {
-    nargs: '?', help: 'SUB Workers', defaultValue: 1
+    nargs: '?', help: 'SUB Workers', defaultValue: 0
 });
 parser.addArgument(['-m', '--n-mul'], {
-    nargs: '?', help: 'MUL Workers', defaultValue: 1
+    nargs: '?', help: 'MUL Workers', defaultValue: 0
 });
 parser.addArgument(['-d', '--n-div'], {
-    nargs: '?', help: 'DIV Workers', defaultValue: 1
+    nargs: '?', help: 'DIV Workers', defaultValue: 0
 });
 parser.addArgument(['-n', '--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
