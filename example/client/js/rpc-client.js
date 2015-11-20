@@ -14,35 +14,32 @@ var assert = require('assert'),
 var parser = new ArgumentParser({
     addHelp: true, description: 'RPC Client', version: '1.0.0'
 });
-
-parser.addArgument(['--host'], {
-    help: 'Server Host [default: localhost]', defaultValue: 'localhost',
+parser.addArgument(['--ws-host'], {
+    help: 'WS Server Host [default: localhost]', defaultValue: 'localhost',
     nargs: '?'
 });
-parser.addArgument(['--port', '-p'], {
-    help: 'Server Port [default: 8088]', defaultValue: 8088,
+parser.addArgument(['--ws-port'], {
+    help: 'WS Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
 });
-
-parser.addArgument(['-j', '--protocol-json'], {
-    help: 'JSON-RPC protocol [default: false]', defaultValue: false,
+parser.addArgument(['-j', '--json-protocol'], {
+    help: 'JSON protocol [default: false]', defaultValue: false,
     action: 'storeTrue'
-});
-
-parser.addArgument(['-a', '--n-add'], {
-    nargs: '?', help: 'ADD Workers', defaultValue: 0
-});
-parser.addArgument(['-s', '--n-sub'], {
-    nargs: '?', help: 'SUB Workers', defaultValue: 0
-});
-parser.addArgument(['-m', '--n-mul'], {
-    nargs: '?', help: 'MUL Workers', defaultValue: 0
-});
-parser.addArgument(['-d', '--n-div'], {
-    nargs: '?', help: 'DIV Workers', defaultValue: 0
 });
 parser.addArgument(['-n', '--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
+});
+parser.addArgument(['-a', '--n-add'], {
+    nargs: '?', help: 'ADD Workers', defaultValue: 1
+});
+parser.addArgument(['-s', '--n-sub'], {
+    nargs: '?', help: 'SUB Workers', defaultValue: 1
+});
+parser.addArgument(['-m', '--n-mul'], {
+    nargs: '?', help: 'MUL Workers', defaultValue: 1
+});
+parser.addArgument(['-d', '--n-div'], {
+    nargs: '?', help: 'DIV Workers', defaultValue: 1
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,27 +58,24 @@ assert(Api);
 
 /////////////////////////////////////////////////////////////////////)/////////
 
-var url = 'ws://' + args.host + ':' + args.port;
-assert(url);
-
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     protocol: function () {
         this.rpc_encode = function (msg) {
-            if (args.json_rpc) {
+            if (args.json_protocol) {
                 return msg.encodeJSON();
             } else {
                 return msg.toBuffer();
             }
         };
         this.rpc_decode = function (cls, buf) {
-            if (args.json_rpc) {
+            if (args.json_protocol) {
                 return cls.decodeJSON(buf);
             } else {
                 return cls.decode(buf);
             }
         };
     },
-    url: url
+    url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
 
 assert(reflector_svc);
@@ -91,36 +85,21 @@ assert(reflector_svc.transport.socket);
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
     protocol: function () {
         this.rpc_encode = function (msg) {
-            if (args.json_rpc) {
+            if (args.json_protocol) {
                 return msg.encodeJSON();
             } else {
                 return msg.toBuffer();
             }
         };
         this.rpc_decode = function (cls, buf) {
-            if (args.json_rpc) {
+            if (args.json_protocol) {
                 return cls.decodeJSON(buf);
             } else {
                 return cls.decode(buf);
             }
         };
     },
-    transport: function () {
-        this.open = function (url) {
-            var WebSocket = require('ws');
-            this.socket = new WebSocket(url);
-        };
-        this.send = function (buffer, msg_callback, err_callback) {
-            this.socket.onmessage = function (ev) {
-                msg_callback(ev.data);
-            };
-            this.socket.onerror = function (err) {
-                err_callback(err);
-            };
-            this.socket.send(buffer);
-        };
-    },
-    url: url
+    url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
 
 assert(calculator_svc);
