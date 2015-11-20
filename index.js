@@ -182,7 +182,7 @@ var Service = mine(function (self, service_cls, opts) {
         }
     };
     assert(self._on_err === undefined);
-    self._on_err = function (err, id) {
+    self._on_err = function (err, id, callback) {
         delete self._do_msg[id];
         callback(err, null);
     };
@@ -198,7 +198,7 @@ var Service = mine(function (self, service_cls, opts) {
         };
         self.transport.send(
             self.protocol.rpc_encode(rpc_req), self._on_msg, function (err) {
-                if (err) self._on_err(err, rpc_req.id);
+                if (err) self._on_err(err, rpc_req.id, callback);
             }
         );
     });
