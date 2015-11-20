@@ -20,11 +20,11 @@ parser.addArgument(['-l', '--logging'], {
     action: 'storeTrue'
 });
 parser.addArgument(['--ws-port'], {
-    help: 'WS Server Port [default: 8088]', defaultValue: 8088,
+    help: 'WS Server Port [default: 8088]', defaultValue: 8089,
     nargs: '?'
 });
 parser.addArgument(['--xhr-port'], {
-    help: 'XHR Server Port [default: 8089]', defaultValue: 8089,
+    help: 'XHR Server Port [default: 8089]', defaultValue: 8088,
     nargs: '?'
 });
 parser.addArgument(['-j', '--json-protocol'], {
