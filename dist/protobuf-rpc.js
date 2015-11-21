@@ -76,6 +76,11 @@
         },
         Xhr: function () {
             this.open = function (url) {
+                this.socket = new function () {
+                    var me = this, _ = setTimeout(function () {
+                        if (me.onopen) me.onopen();
+                    }, 0);
+                };
                 this.url = url;
             };
             this.send = function (buffer, msg_callback, err_callback) {
