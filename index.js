@@ -171,19 +171,21 @@ var Service = mine(function (self, service_cls, opts) {
         self.rpc_message = opts.rpc_message;
     }
 
-    assert(self._do_msg === undefined);
-    self._do_msg = {};
-    assert(self._on_msg === undefined);
-    self._on_msg = function (buf) {
+    assert(self.do_msg === undefined);
+    self.do_msg = {};
+
+    assert(self.on_msg === undefined);
+    self.on_msg = function (buf) {
         var rpc_res = self.protocol.rpc_decode(self.rpc_message.Response, buf);
-        if (self._do_msg[rpc_res.id]) {
-            self._do_msg[rpc_res.id](rpc_res.data);
-            delete self._do_msg[rpc_res.id];
+        if (self.do_msg[rpc_res.id]) {
+            self.do_msg[rpc_res.id](rpc_res.data);
+            delete self.do_msg[rpc_res.id];
         }
     };
-    assert(self._on_err === undefined);
-    self._on_err = function (err, id, callback) {
-        delete self._do_msg[id];
+
+    assert(self.on_err === undefined);
+    self.on_err = function (err, id, callback) {
+        delete self.do_msg[id];
         callback(err, null);
     };
 
@@ -193,12 +195,12 @@ var Service = mine(function (self, service_cls, opts) {
             data: self.protocol.msg_encode(req),
             name: method
         });
-        self._do_msg[rpc_req.id] = function (buf) {
+        self.do_msg[rpc_req.id] = function (buf) {
             callback(null, self.protocol.msg_decode(self.return_cls[method], buf));
         };
         self.transport.send(
-            self.protocol.rpc_encode(rpc_req), self._on_msg, function (err) {
-                if (err) self._on_err(err, rpc_req.id, callback);
+            self.protocol.rpc_encode(rpc_req), self.on_msg, function (err) {
+                if (err) self.on_err(err, rpc_req.id, callback);
             }
         );
     });
