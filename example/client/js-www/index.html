@@ -24,27 +24,27 @@
 <script>
     var SYSTEM = {
         Api: (function () {
-            var api_factory = dcodeIO.ProtoBuf.loadProtoFile({
+            var factory = dcodeIO.ProtoBuf.loadProtoFile({
                 root: 'protocol', file: 'api.proto'
             });
 
-            return api_factory.build();
+            return factory.build();
         }()),
 
-        Service: function (url, service_cls, opts) {
-            return dcodeIO.ProtoBuf.Rpc(url, service_cls, opts);
+        Service: function (service_cls, opts) {
+            return dcodeIO.ProtoBuf.Rpc(service_cls, opts);
         }
     };
 
     var SERVICE = {
         Reflector: (function () {
             return SYSTEM.Service(SYSTEM.Api.Reflector.Service, {
-                url: 'ws://localhost:8088'
+                url: 'ws://localhost:8089'
             });
         }()),
         Calculator: (function () {
             return SYSTEM.Service(SYSTEM.Api.Calculator.Service, {
-                url: 'ws://localhost:8088'
+                url: 'ws://localhost:8089'
             });
         }())
     };
