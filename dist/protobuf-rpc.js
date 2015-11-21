@@ -59,6 +59,70 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+    var Transport = {
+        Ws: function () {
+            this.open = function (url) {
+                this.socket = new WebSocket(url);
+                this.socket.binaryType = 'arraybuffer';
+            };
+            this.send = function (buffer, msg_callback, err_callback) {
+                this.socket.onmessage = function (ev) {
+                    msg_callback(ev.data);
+                };
+                this.socket.onerror = function (err) {
+                    err_callback(err);
+                };
+                this.socket.send(buffer);
+            };
+        },
+        Xhr: function () {
+            this.open = function (url) {
+                this.url = url;
+            };
+            this.send = function (buffer, msg_callback, err_callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', this.url, false);
+                xhr.onreadystatechange = function () {
+                    if (this.readyState !== this.DONE) {
+                        return;
+                    }
+
+                    if (this.status === 200) {
+                        var bb = dcodeIO.ByteBuffer.fromBinary(
+                            this.response
+                        );
+                        msg_callback(bb.toArrayBuffer());
+                    } else {
+                        err_callback(this.statusText);
+                    }
+                };
+                xhr.send(new Uint8Array(buffer));
+            };
+        }
+    };
+
+///////////////////////////////////////////////////////////////////////////////
+
+    var Protocol = {
+        Binary: function () {
+            this.rpc_encode = function (msg) {
+                return msg.toBuffer();
+            };
+            this.rpc_decode = function (cls, buf) {
+                return cls.decode(buf);
+            };
+            this.msg_encode = function (msg) {
+                return msg.toBuffer();
+            };
+            this.msg_decode = function (cls, buf) {
+                return cls.decode(buf);
+            }
+        }
+    };
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
     var Service = mine(function (self, service_cls, opts) {
         assert(service_cls, 'Service class required');
 
@@ -77,21 +141,7 @@
 
         assert(self.transport === undefined);
         if (opts.transport === undefined) {
-            self.transport = new function () {
-                this.open = function (url) {
-                    this.socket = new WebSocket(url);
-                    this.socket.binaryType = 'arraybuffer';
-                };
-                this.send = function (buffer, msg_callback, err_callback) {
-                    this.socket.onmessage = function (ev) {
-                        msg_callback(ev.data);
-                    };
-                    this.socket.onerror = function (err) {
-                        err_callback(err);
-                    };
-                    this.socket.send(buffer);
-                };
-            }();
+            self.transport = new Transport.Ws();
             self.transport.open(self.url);
         } else {
             self.transport = new opts.transport();
@@ -104,20 +154,7 @@
 
         assert(self.protocol === undefined);
         if (opts.protocol === undefined) {
-            self.protocol = new function () {
-                this.rpc_encode = function (msg) {
-                    return msg.toBuffer();
-                };
-                this.rpc_decode = function (cls, buf) {
-                    return cls.decode(buf);
-                };
-                this.msg_encode = function (msg) {
-                    return msg.toBuffer();
-                };
-                this.msg_decode = function (cls, buf) {
-                    return cls.decode(buf);
-                }
-            };
+            self.protocol = new Protocol.Binary();
         } else {
             self.protocol = new opts.protocol();
             if (self.protocol.rpc_encode === undefined) {
@@ -208,6 +245,8 @@
     dcodeIO.ProtoBuf.Rpc = function (url, service_cls, opts) {
         return new Service(url, service_cls, opts);
     };
+    dcodeIO.ProtoBuf.Rpc.Protocol = Protocol;
+    dcodeIO.ProtoBuf.Rpc.Transport = Transport;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
