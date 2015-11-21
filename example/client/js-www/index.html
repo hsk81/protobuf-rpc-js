@@ -17,7 +17,7 @@
 <script>
     var defer = function (fn, ms) {
         return function () {
-            return setTimeout(fn, ms || 256);
+            return setTimeout(fn, ms||0);
         }
     };
 </script>
@@ -39,7 +39,35 @@
     var SERVICE = {
         Reflector: (function () {
             return SYSTEM.Service(SYSTEM.Api.Reflector.Service, {
-                url: 'ws://localhost:8089'
+                transport: function () {
+                    this.open = function (url) {
+                        this.socket = new function () {
+                            var me = this, id = setTimeout(function () {
+                                if (me.onopen) me.onopen();
+                            }, 0);
+                        };
+                        this.url = url;
+                    };
+                    this.send = function (buffer, msg_callback, err_callback) {
+                        this.xhr = new XMLHttpRequest();
+                        this.xhr.open('POST', this.url, false);
+                        this.xhr.onreadystatechange = function () {
+                            if (this.readyState !== this.DONE) {
+                                return;
+                            }
+                            if (this.status === 200) {
+                                var bb = dcodeIO.ByteBuffer.fromBinary(
+                                    this.response
+                                );
+                                msg_callback(bb.toArrayBuffer());
+                            } else {
+                                err_callback(this.statusText);
+                            }
+                        };
+                        this.xhr.send(new Uint8Array(buffer));
+                    };
+                },
+                url: 'http://localhost:8088'
             });
         }()),
         Calculator: (function () {

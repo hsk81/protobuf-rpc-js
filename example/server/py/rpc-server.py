@@ -67,7 +67,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, data):
         if arguments.logging:
-            print '[on:message]', repr(data), type(data)
+            print '[on:message]', repr(data)
 
         self.write_message(process(data), binary=True)
 
@@ -83,9 +83,13 @@ class XhrHandler(tornado.web.RequestHandler):
 
     def post(self):
         if arguments.logging:
-            print '[on:message]', self.request.body
+            print '[on:message]', repr(self.request.body)
 
-        self.write(process(self.request.body))
+        self.write(process(self.request.body).decode('latin-1'))
+
+    def set_default_headers(self):
+
+        self.add_header('Access-Control-Allow-Origin', '*')
 
 xhr_application = tornado.web.Application([(r'/', XhrHandler)])
 

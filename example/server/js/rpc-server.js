@@ -145,6 +145,7 @@ wss.on('connection', function (ws) {
 ///////////////////////////////////////////////////////////////////////////////
 
 var http = Http.createServer(function (req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     var buffers = [];
     req.on('data', function (data) {
