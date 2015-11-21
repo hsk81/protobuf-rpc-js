@@ -67,7 +67,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, data):
         if arguments.logging:
-            print '[ws:message]', repr(data), type(data)
+            print '[on:message]', repr(data), type(data)
 
         self.write_message(process(data), binary=True)
 
@@ -75,21 +75,19 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         return True
 
+ws_application = tornado.web.Application([(r'/', WebSocketHandler)])
+
 ###############################################################################
 
 class XhrHandler(tornado.web.RequestHandler):
 
     def post(self):
         if arguments.logging:
-            print '[xhr:post]', self.request.body
+            print '[on:message]', self.request.body
 
         self.write(process(self.request.body))
 
-###############################################################################
-
-application = tornado.web.Application([
-    (r'/', WebSocketHandler), (r'/xhr', XhrHandler)
-])
+xhr_application = tornado.web.Application([(r'/', XhrHandler)])
 
 ###############################################################################
 ###############################################################################
@@ -101,19 +99,23 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-v', '--version', action='version',
-        version='%(prog)s 0.0.1')
-    parser.add_argument('-p', '--port', metavar='PORT', type=int,
-        default=os.environ.get('RPC_PORT', 8088), nargs='?',
-        help='Server Port')
+        version='%(prog)s 1.0.1')
     parser.add_argument('-l', '--logging',
         default=os.environ.get('LOGGING', False), action='store_true',
-        help='Message logging')
-    parser.add_argument('--json-rpc',
-        default=os.environ.get('JSON_RPC', False), action='store_true',
-        help='JSON-RPC encoding')
+        help='Logging')
+    parser.add_argument('--ws-port', metavar='WS_PORT', type=int,
+        default=os.environ.get('RPC_PORT', 8089), nargs='?',
+        help='WS Server Port')
+    parser.add_argument('--xhr-port', metavar='XHR_PORT', type=int,
+        default=os.environ.get('RPC_PORT', 8088), nargs='?',
+        help='WS Server Port')
+    parser.add_argument('--json-protocol',
+        default=os.environ.get('JSON_PROTOCOL', False), action='store_true',
+        help='JSON protocol')
 
     arguments = parser.parse_args()
-    application.listen(arguments.port)
+    ws_application.listen(arguments.ws_port)
+    xhr_application.listen(arguments.xhr_port)
     tornado.ioloop.IOLoop.instance().start()
 
 ###############################################################################
