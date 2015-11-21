@@ -104,7 +104,7 @@ function process(data, opts) {
             break;
 
         default:
-            throw(new Error(rpc_req.name + ': not supported'));
+            throw new Error(rpc_req.name + ': not supported');
     }
 
     rpc_res = new Rpc.Response({
