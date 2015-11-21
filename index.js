@@ -24,7 +24,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var ProtoBuf = require('protobufjs'),
-    WebSocket = require('ws');
+    WebSocket = require('ws'),
+    XMLHttpRequest = require('xhr2').XMLHttpRequest,
+    EventEmitter = require('events').EventEmitter;
 
 var assert = require('assert'),
     crypto = require('crypto');
@@ -80,27 +82,29 @@ var Transport = {
         };
     },
     Xhr: function () {
-        this.open = function (url) {
-            this.url = url;
-        };
+        this.open = mine(function (self, url) {
+            setTimeout(function () { self.socket.emit('open'); }, 0);
+            self.socket = new EventEmitter();
+            self.url = url;
+        });
         this.send = function (buffer, msg_callback, err_callback) {
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', this.url, false);
+            xhr.open('POST', this.url, true);
             xhr.onreadystatechange = function () {
                 if (this.readyState !== this.DONE) {
                     return;
                 }
 
                 if (this.status === 200) {
-                    var bb = dcodeIO.ByteBuffer.fromBinary(
-                        this.response
+                    var bb = ProtoBuf.ByteBuffer.fromBinary(
+                        this.responseText
                     );
-                    msg_callback(bb.toArrayBuffer());
+                    msg_callback(bb.toBuffer());
                 } else {
                     err_callback(this.statusText);
                 }
             };
-            xhr.send(new Uint8Array(buffer));
+            xhr.send(buffer);
         };
     }
 };

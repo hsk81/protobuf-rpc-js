@@ -103,7 +103,7 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-v', '--version', action='version',
-        version='%(prog)s 1.0.2')
+        version='%(prog)s 1.0.3')
     parser.add_argument('-l', '--logging',
         default=os.environ.get('LOGGING', False), action='store_true',
         help='Logging')
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         help='WS Server Port')
     parser.add_argument('--json-protocol',
         default=os.environ.get('JSON_PROTOCOL', False), action='store_true',
-        help='JSON protocol')
+        help='JSON protocol [NOT SUPPORTED]')
 
     arguments = parser.parse_args()
     ws_application.listen(arguments.ws_port)

@@ -13,7 +13,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Server', version: '1.0.2'
+    addHelp: true, description: 'RPC Server', version: '1.0.3'
 });
 parser.addArgument(['-l', '--logging'], {
     help: 'Logging [default: false]', defaultValue: false,
@@ -63,7 +63,7 @@ assert.ok(Api);
 function process(data, opts) {
     var rpc_req, req, rpc_res, res;
 
-    if (opts && opts.protocol === 'json') {
+    if (args.json_protocol) {
         rpc_req = Rpc.Request.decodeJSON(data);
     } else {
         rpc_req = Rpc.Request.decode(data);
@@ -113,7 +113,7 @@ function process(data, opts) {
         id: rpc_req.id, data: res.toBuffer()
     });
 
-    if (opts && opts.protocol === 'json') {
+    if (args.json_protocol) {
         return rpc_res.encodeJSON();
     } else {
         return rpc_res.toBuffer();
@@ -131,14 +131,14 @@ wss.on('connection', function (ws) {
     ws.on('message', function (data, flags) {
 
         if (args.logging) {
-            console.log('[on:message]', data);
+            if (args.json_protocol) {
+                console.log('[on:message]', data.toString());
+            } else {
+                console.log('[on:message]', data);
+            }
         }
 
-        if (args.json_protocol) {
-            ws.send(process(data, {protocol: 'json'}));
-        } else {
-            ws.send(process(data));
-        }
+        ws.send(process(data));
     });
 });
 
@@ -156,7 +156,11 @@ var http = Http.createServer(function (req, res) {
         var buffer = Buffer.concat(buffers);
 
         if (args.logging) {
-            console.log('[on:message]', buffer);
+            if (args.json_protocol) {
+                console.log('[on:message]', buffer.toString());
+            } else {
+                console.log('[on:message]', buffer);
+            }
         }
 
         res.end(process(buffer).toString('binary'));

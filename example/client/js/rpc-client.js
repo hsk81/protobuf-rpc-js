@@ -12,7 +12,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Client', version: '1.0.0'
+    addHelp: true, description: 'RPC Client', version: '1.0.3'
 });
 parser.addArgument(['--ws-host'], {
     help: 'WS Server Host [default: localhost]', defaultValue: 'localhost',
@@ -20,6 +20,14 @@ parser.addArgument(['--ws-host'], {
 });
 parser.addArgument(['--ws-port'], {
     help: 'WS Server Port [default: 8088]', defaultValue: 8089,
+    nargs: '?'
+});
+parser.addArgument(['--xhr-host'], {
+    help: 'XHR Server Host [default: localhost]', defaultValue: 'localhost',
+    nargs: '?'
+});
+parser.addArgument(['--xhr-port'], {
+    help: 'XHR Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
 });
 parser.addArgument(['-j', '--json-protocol'], {
@@ -60,12 +68,11 @@ assert(Api);
 /////////////////////////////////////////////////////////////////////)/////////
 
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
-    protocol: args.json_protocol ? {
-        rpc: ProtoBufRpc.Protocol.Json.rpc
-    } : {
-        rpc: ProtoBufRpc.Protocol.Binary.rpc
-    },
-    url: 'ws://' + args.ws_host + ':' + args.ws_port
+    url: 'http://' + args.xhr_host + ':' + args.xhr_port,
+    transport: ProtoBufRpc.Transport.Xhr,
+    protocol:  { rpc: args.json_protocol ?
+        ProtoBufRpc.Protocol.Json.rpc : ProtoBufRpc.Protocol.Binary.rpc
+    }
 });
 
 assert(reflector_svc);
@@ -73,12 +80,10 @@ assert(reflector_svc.transport);
 assert(reflector_svc.transport.socket);
 
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
-    protocol: args.json_protocol ? {
-        rpc: ProtoBufRpc.Protocol.Json.rpc
-    } : {
-        rpc: ProtoBufRpc.Protocol.Binary.rpc
-    },
-    url: 'ws://' + args.ws_host + ':' + args.ws_port
+    url: 'ws://' + args.ws_host + ':' + args.ws_port,
+    protocol:  { rpc: args.json_protocol ?
+        ProtoBufRpc.Protocol.Json.rpc : ProtoBufRpc.Protocol.Binary.rpc
+    }
 });
 
 assert(calculator_svc);

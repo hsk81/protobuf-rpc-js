@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "protobufjs": "4.*",
+    "xhr2": "0.*",
     "ws": "0.*"
   },
   "devDependencies": {
@@ -28,5 +29,5 @@
     "url": "git+https://github.com/hsk81/protobuf-rpc-js.git",
     "type": "git"
   },
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
