@@ -36,7 +36,7 @@
         };
     }
 
-    function map_to (service_cls) {
+    function map_to(service_cls) {
         var map = {};
 
         var t_cls_fqn = service_cls.$type.fqn();
@@ -106,22 +106,38 @@
     var Protocol = {
         Binary: {
             rpc: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+                encode: function (msg) {
+                    return msg.toBuffer();
+                },
+                decode: function (cls, buf) {
+                    return cls.decode(buf);
+                }
             },
             msg: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+                encode: function (msg) {
+                    return msg.toBuffer();
+                },
+                decode: function (cls, buf) {
+                    return cls.decode(buf);
+                }
             }
         },
         Json: {
             rpc: {
-                encode: function (msg) { return msg.encodeJSON(); },
-                decode: function (cls, buf) { return cls.decodeJSON(buf); }
+                encode: function (msg) {
+                    return msg.encodeJSON();
+                },
+                decode: function (cls, buf) {
+                    return cls.decodeJSON(buf);
+                }
             },
             msg: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+                encode: function (msg) {
+                    return msg.toBuffer();
+                },
+                decode: function (cls, buf) {
+                    return cls.decode(buf);
+                }
             }
         }
     };

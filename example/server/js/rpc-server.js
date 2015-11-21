@@ -40,7 +40,8 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 
 var RpcFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'rpc.proto'});
+    root: path.join(__dirname, '../../protocol'), file: 'rpc.proto'
+});
 assert.ok(RpcFactory);
 
 var Rpc = RpcFactory.build('Rpc');
@@ -49,7 +50,8 @@ assert.ok(Rpc);
 ///////////////////////////////////////////////////////////////////////////////
 
 var ApiFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
+    root: path.join(__dirname, '../../protocol'), file: 'api.proto'
+});
 assert.ok(ApiFactory);
 
 var Api = ApiFactory.build();
@@ -142,7 +144,7 @@ wss.on('connection', function (ws) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var http = Http.createServer(function(req, res) {
+var http = Http.createServer(function (req, res) {
 
     var buffers = [];
     req.on('data', function (data) {

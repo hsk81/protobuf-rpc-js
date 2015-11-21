@@ -50,7 +50,8 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 
 var ApiFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'api.proto'});
+    root: path.join(__dirname, '../../protocol'), file: 'api.proto'
+});
 assert(ApiFactory);
 
 var Api = ApiFactory.build();

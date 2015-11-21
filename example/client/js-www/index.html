@@ -16,7 +16,9 @@
 <body>
 <script>
     var defer = function (fn, ms) {
-        return function () { return setTimeout(fn, ms||256); }
+        return function () {
+            return setTimeout(fn, ms || 256);
+        }
     };
 </script>
 <script>

@@ -32,7 +32,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-function mine (fn) {
+function mine(fn) {
     return function () {
         return fn.apply(this, [this].concat(Array.prototype.slice.call(
             arguments
@@ -40,7 +40,7 @@ function mine (fn) {
     };
 }
 
-function map_to (service_cls) {
+function map_to(service_cls) {
     var map = {};
 
     var t_cls_fqn = service_cls.$type.fqn();
@@ -63,72 +63,88 @@ function map_to (service_cls) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-    var Transport = {
-        Ws: function () {
-            this.open = function (url) {
-                this.socket = new WebSocket(url);
-                this.socket.binaryType = 'arraybuffer';
+var Transport = {
+    Ws: function () {
+        this.open = function (url) {
+            this.socket = new WebSocket(url);
+            this.socket.binaryType = 'arraybuffer';
+        };
+        this.send = function (buffer, msg_callback, err_callback) {
+            this.socket.onmessage = function (ev) {
+                msg_callback(ev.data);
             };
-            this.send = function (buffer, msg_callback, err_callback) {
-                this.socket.onmessage = function (ev) {
-                    msg_callback(ev.data);
-                };
-                this.socket.onerror = function (err) {
-                    err_callback(err);
-                };
-                this.socket.send(buffer);
+            this.socket.onerror = function (err) {
+                err_callback(err);
             };
-        },
-        Xhr: function () {
-            this.open = function (url) {
-                this.url = url;
-            };
-            this.send = function (buffer, msg_callback, err_callback) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', this.url, false);
-                xhr.onreadystatechange = function () {
-                    if (this.readyState !== this.DONE) {
-                        return;
-                    }
+            this.socket.send(buffer);
+        };
+    },
+    Xhr: function () {
+        this.open = function (url) {
+            this.url = url;
+        };
+        this.send = function (buffer, msg_callback, err_callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', this.url, false);
+            xhr.onreadystatechange = function () {
+                if (this.readyState !== this.DONE) {
+                    return;
+                }
 
-                    if (this.status === 200) {
-                        var bb = dcodeIO.ByteBuffer.fromBinary(
-                            this.response
-                        );
-                        msg_callback(bb.toArrayBuffer());
-                    } else {
-                        err_callback(this.statusText);
-                    }
-                };
-                xhr.send(new Uint8Array(buffer));
+                if (this.status === 200) {
+                    var bb = dcodeIO.ByteBuffer.fromBinary(
+                        this.response
+                    );
+                    msg_callback(bb.toArrayBuffer());
+                } else {
+                    err_callback(this.statusText);
+                }
             };
-        }
-    };
+            xhr.send(new Uint8Array(buffer));
+        };
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    var Protocol = {
-        Binary: {
-            rpc: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+var Protocol = {
+    Binary: {
+        rpc: {
+            encode: function (msg) {
+                return msg.toBuffer();
             },
-            msg: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+            decode: function (cls, buf) {
+                return cls.decode(buf);
             }
         },
-        Json: {
-            rpc: {
-                encode: function (msg) { return msg.encodeJSON(); },
-                decode: function (cls, buf) { return cls.decodeJSON(buf); }
+        msg: {
+            encode: function (msg) {
+                return msg.toBuffer();
             },
-            msg: {
-                encode: function (msg) { return msg.toBuffer(); },
-                decode: function (cls, buf) { return cls.decode(buf); }
+            decode: function (cls, buf) {
+                return cls.decode(buf);
             }
         }
-    };
+    },
+    Json: {
+        rpc: {
+            encode: function (msg) {
+                return msg.encodeJSON();
+            },
+            decode: function (cls, buf) {
+                return cls.decodeJSON(buf);
+            }
+        },
+        msg: {
+            encode: function (msg) {
+                return msg.toBuffer();
+            },
+            decode: function (cls, buf) {
+                return cls.decode(buf);
+            }
+        }
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
