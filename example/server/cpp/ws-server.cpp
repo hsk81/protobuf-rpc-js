@@ -1,4 +1,4 @@
-#include "rpc-server.h"
+#include "ws-server.h"
 #include "protocol/rpc.pb.h"
 #include "protocol/api.pb.h"
 
@@ -7,10 +7,10 @@
 
 QT_USE_NAMESPACE
 
-RpcServer::RpcServer(quint16 port, QObject *parent) : QObject(parent), m_logging(false) {
+WsServer::WsServer(quint16 port, QObject *parent) : QObject(parent), m_logging(false) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    QString name = QStringLiteral("rpc-server");
+    QString name = QStringLiteral("ws-server");
     QWebSocketServer::SslMode mode = QWebSocketServer::NonSecureMode;
 
     m_server = new QWebSocketServer(name, mode);
@@ -19,12 +19,12 @@ RpcServer::RpcServer(quint16 port, QObject *parent) : QObject(parent), m_logging
     Q_ASSERT(listening);
 
     QObject::connect(
-                m_server, &QWebSocketServer::newConnection, this, &RpcServer::onConnection);
+                m_server, &QWebSocketServer::newConnection, this, &WsServer::onConnection);
     QObject::connect(
-                m_server, &QWebSocketServer::closed, this, &RpcServer::closed);
+                m_server, &QWebSocketServer::closed, this, &WsServer::closed);
 }
 
-RpcServer::~RpcServer() {
+WsServer::~WsServer() {
     m_server->close();
     Q_ASSERT(!m_server->isListening());
 
@@ -32,20 +32,20 @@ RpcServer::~RpcServer() {
     Q_ASSERT(m_clients.empty());
 }
 
-void RpcServer::onConnection() {
+void WsServer::onConnection() {
     QWebSocket *socket = m_server->nextPendingConnection();
     Q_ASSERT(socket);
 
     QObject::connect(
-                socket, &QWebSocket::binaryMessageReceived, this, &RpcServer::onBinary);
+                socket, &QWebSocket::binaryMessageReceived, this, &WsServer::onBinary);
     QObject::connect(
-                socket, &QWebSocket::disconnected, this, &RpcServer::onDisconnect);
+                socket, &QWebSocket::disconnected, this, &WsServer::onDisconnect);
 
     m_clients << socket;
     Q_ASSERT(!m_clients.empty());
 }
 
-void RpcServer::onBinary(QByteArray req_msg) {
+void WsServer::onBinary(QByteArray req_msg) {
     QWebSocket *client = qobject_cast<QWebSocket*>(sender());
     Q_ASSERT(client);
 
@@ -106,7 +106,7 @@ void RpcServer::onBinary(QByteArray req_msg) {
     client->sendBinaryMessage(res_msg);
 }
 
-void RpcServer::onDisconnect() {
+void WsServer::onDisconnect() {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
     Q_ASSERT(client);
 

@@ -1,5 +1,5 @@
-#ifndef RPC_SERVER_H
-#define RPC_SERVER_H
+#ifndef WS_SERVER_H
+#define WS_SERVER_H
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -13,12 +13,12 @@
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
-class RpcServer : public QObject
+class WsServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit RpcServer(quint16 port, QObject *parent = 0);
-    ~RpcServer();
+    explicit WsServer(quint16 port, QObject *parent = 0);
+    ~WsServer();
 
 Q_SIGNALS:
     void closed();
@@ -73,4 +73,4 @@ public:
     QString m_message;
 };
 
-#endif // RPC_SERVER_H
+#endif // WS_SERVER_H

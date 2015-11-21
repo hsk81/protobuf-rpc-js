@@ -42,5 +42,6 @@ example/server/py/build
 example/server/py/dist
 example/server/py/env
 example/server/py/*.egg-info
-example/server/cpp/build
 example/server/cpp/*.pro.user
+example/server/cpp/build*
+example/server/build*

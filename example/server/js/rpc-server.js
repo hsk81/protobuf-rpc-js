@@ -13,7 +13,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Server', version: '1.0.0'
+    addHelp: true, description: 'RPC Server', version: '1.0.2'
 });
 parser.addArgument(['-l', '--logging'], {
     help: 'Logging [default: false]', defaultValue: false,
