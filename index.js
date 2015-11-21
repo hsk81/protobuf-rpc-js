@@ -63,6 +63,76 @@ function map_to (service_cls) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+    var Transport = {
+        Ws: function () {
+            this.open = function (url) {
+                this.socket = new WebSocket(url);
+                this.socket.binaryType = 'arraybuffer';
+            };
+            this.send = function (buffer, msg_callback, err_callback) {
+                this.socket.onmessage = function (ev) {
+                    msg_callback(ev.data);
+                };
+                this.socket.onerror = function (err) {
+                    err_callback(err);
+                };
+                this.socket.send(buffer);
+            };
+        },
+        Xhr: function () {
+            this.open = function (url) {
+                this.url = url;
+            };
+            this.send = function (buffer, msg_callback, err_callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', this.url, false);
+                xhr.onreadystatechange = function () {
+                    if (this.readyState !== this.DONE) {
+                        return;
+                    }
+
+                    if (this.status === 200) {
+                        var bb = dcodeIO.ByteBuffer.fromBinary(
+                            this.response
+                        );
+                        msg_callback(bb.toArrayBuffer());
+                    } else {
+                        err_callback(this.statusText);
+                    }
+                };
+                xhr.send(new Uint8Array(buffer));
+            };
+        }
+    };
+
+///////////////////////////////////////////////////////////////////////////////
+
+    var Protocol = {
+        Binary: {
+            rpc: {
+                encode: function (msg) { return msg.toBuffer(); },
+                decode: function (cls, buf) { return cls.decode(buf); }
+            },
+            msg: {
+                encode: function (msg) { return msg.toBuffer(); },
+                decode: function (cls, buf) { return cls.decode(buf); }
+            }
+        },
+        Json: {
+            rpc: {
+                encode: function (msg) { return msg.encodeJSON(); },
+                decode: function (cls, buf) { return cls.decodeJSON(buf); }
+            },
+            msg: {
+                encode: function (msg) { return msg.toBuffer(); },
+                decode: function (cls, buf) { return cls.decode(buf); }
+            }
+        }
+    };
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 var Service = mine(function (self, service_cls, opts) {
     assert(service_cls, 'Service class required');
 
@@ -107,41 +177,24 @@ var Service = mine(function (self, service_cls, opts) {
 
     assert(self.protocol === undefined);
     if (opts.protocol === undefined) {
-        self.protocol = new function () {
-            this.rpc_encode = function (msg) {
-                return msg.toBuffer();
-            };
-            this.rpc_decode = function (cls, buf) {
-                return cls.decode(buf);
-            };
-            this.msg_encode = function (msg) {
-                return msg.toBuffer();
-            };
-            this.msg_decode = function (cls, buf) {
-                return cls.decode(buf);
-            }
-        };
+        self.protocol = Protocol.Binary;
     } else {
-        self.protocol = new opts.protocol();
-        if (self.protocol.rpc_encode === undefined) {
-            self.protocol.rpc_encode = function (msg) {
-                return msg.toBuffer();
-            };
+        self.protocol = opts.protocol;
+        if (self.protocol.rpc === undefined) {
+            self.protocol.rpc = Protocol.Binary.rpc;
+        } else {
+            if (self.protocol.rpc.encode === undefined)
+                self.protocol.rpc.encode = Protocol.Binary.rpc.encode;
+            if (self.protocol.rpc.decode === undefined)
+                self.protocol.rpc.decode = Protocol.Binary.rpc.decode;
         }
-        if (self.protocol.rpc_decode === undefined) {
-            self.protocol.rpc_decode = function (cls, buf) {
-                return cls.decode(buf);
-            };
-        }
-        if (self.protocol.msg_encode === undefined) {
-            self.protocol.msg_encode = function (msg) {
-                return msg.toBuffer();
-            };
-        }
-        if (self.protocol.msg_decode === undefined) {
-            self.protocol.msg_decode = function (cls, buf) {
-                return cls.decode(buf);
-            };
+        if (self.protocol.msg === undefined) {
+            self.protocol.msg = Protocol.Binary.msg;
+        } else {
+            if (self.protocol.msg.encode === undefined)
+                self.protocol.msg.encode = Protocol.Binary.msg.encode;
+            if (self.protocol.msg.decode === undefined)
+                self.protocol.msg.decode = Protocol.Binary.msg.decode;
         }
     }
     service_cls.prototype.protocol = self.protocol;
@@ -176,7 +229,7 @@ var Service = mine(function (self, service_cls, opts) {
 
     assert(self.on_msg === undefined);
     self.on_msg = function (buf) {
-        var rpc_res = self.protocol.rpc_decode(self.rpc_message.Response, buf);
+        var rpc_res = self.protocol.rpc.decode(self.rpc_message.Response, buf);
         if (self.do_msg[rpc_res.id]) {
             self.do_msg[rpc_res.id](rpc_res.data);
             delete self.do_msg[rpc_res.id];
@@ -192,14 +245,14 @@ var Service = mine(function (self, service_cls, opts) {
     return new service_cls(function (method, req, callback) {
         var rpc_req = new self.rpc_message.Request({
             id: crypto.randomBytes(4).readUInt32LE(),
-            data: self.protocol.msg_encode(req),
+            data: self.protocol.msg.encode(req),
             name: method
         });
         self.do_msg[rpc_req.id] = function (buf) {
-            callback(null, self.protocol.msg_decode(self.return_cls[method], buf));
+            callback(null, self.protocol.msg.decode(self.return_cls[method], buf));
         };
         self.transport.send(
-            self.protocol.rpc_encode(rpc_req), self.on_msg, function (err) {
+            self.protocol.rpc.encode(rpc_req), self.on_msg, function (err) {
                 if (err) self.on_err(err, rpc_req.id, callback);
             }
         );
@@ -211,6 +264,9 @@ var Service = mine(function (self, service_cls, opts) {
 module.exports = function (url, service_cls, opts) {
     return new Service(url, service_cls, opts);
 };
+
+module.exports.Protocol = Protocol;
+module.exports.Transport = Transport;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

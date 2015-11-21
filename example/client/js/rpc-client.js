@@ -59,21 +59,10 @@ assert(Api);
 /////////////////////////////////////////////////////////////////////)/////////
 
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
-    protocol: function () {
-        this.rpc_encode = function (msg) {
-            if (args.json_protocol) {
-                return msg.encodeJSON();
-            } else {
-                return msg.toBuffer();
-            }
-        };
-        this.rpc_decode = function (cls, buf) {
-            if (args.json_protocol) {
-                return cls.decodeJSON(buf);
-            } else {
-                return cls.decode(buf);
-            }
-        };
+    protocol: args.json_protocol ? {
+        rpc: ProtoBufRpc.Protocol.Json.rpc
+    } : {
+        rpc: ProtoBufRpc.Protocol.Binary.rpc
     },
     url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
@@ -83,21 +72,10 @@ assert(reflector_svc.transport);
 assert(reflector_svc.transport.socket);
 
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
-    protocol: function () {
-        this.rpc_encode = function (msg) {
-            if (args.json_protocol) {
-                return msg.encodeJSON();
-            } else {
-                return msg.toBuffer();
-            }
-        };
-        this.rpc_decode = function (cls, buf) {
-            if (args.json_protocol) {
-                return cls.decodeJSON(buf);
-            } else {
-                return cls.decode(buf);
-            }
-        };
+    protocol: args.json_protocol ? {
+        rpc: ProtoBufRpc.Protocol.Json.rpc
+    } : {
+        rpc: ProtoBufRpc.Protocol.Binary.rpc
     },
     url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
