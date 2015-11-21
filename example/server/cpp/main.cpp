@@ -2,7 +2,7 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QCommandLineOption>
 
-#include "rpc-server.h"
+#include "ws-server.h"
 
 int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
