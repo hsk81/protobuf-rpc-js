@@ -137,10 +137,46 @@
             },
             msg: {
                 encode: function (msg) {
-                    return msg.toBuffer();
+                    return msg.encodeJSON();
                 },
                 decode: function (cls, buf) {
-                    return cls.decode(buf);
+                    return cls.decodeJSON(buf);
+                }
+            }
+        },
+        Hex: {
+            rpc: {
+                encode: function (msg) {
+                    return msg.encodeHex();
+                },
+                decode: function (cls, buf) {
+                    return cls.decodeHex(buf);
+                }
+            },
+            msg: {
+                encode: function (msg) {
+                    return msg.encodeHex();
+                },
+                decode: function (cls, buf) {
+                    return cls.decodeHex(buf);
+                }
+            }
+        },
+        Delimited: {
+            rpc: {
+                encode: function (msg) {
+                    return msg.encodeDelimited();
+                },
+                decode: function (cls, buf) {
+                    return cls.decodeDelimited(buf);
+                }
+            },
+            msg: {
+                encode: function (msg) {
+                    return msg.encodeDelimited();
+                },
+                decode: function (cls, buf) {
+                    return cls.decodeDelimited(buf);
                 }
             }
         }
