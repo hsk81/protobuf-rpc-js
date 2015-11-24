@@ -31,7 +31,7 @@ parser.addArgument(['--xhr-port'], {
     nargs: '?'
 });
 parser.addArgument(['-j', '--json'], {
-    help: 'JSON protocol [default: false]', defaultValue: false,
+    help: 'JSON encoding [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
 parser.addArgument(['-n', '--n-ack'], {
@@ -70,8 +70,8 @@ assert(Api);
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     url: 'http://' + args.xhr_host + ':' + args.xhr_port,
     transport: ProtoBufRpc.Transport.Xhr,
-    protocol:  { rpc: args.json ?
-        ProtoBufRpc.Protocol.Json.rpc : ProtoBufRpc.Protocol.Binary.rpc
+    encoding:  { rpc: args.json ?
+        ProtoBufRpc.Encoding.Json.rpc : ProtoBufRpc.Encoding.Binary.rpc
     }
 });
 
@@ -81,8 +81,8 @@ assert(reflector_svc.transport.socket);
 
 var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
     url: 'ws://' + args.ws_host + ':' + args.ws_port,
-    protocol:  { rpc: args.json ?
-        ProtoBufRpc.Protocol.Json.rpc : ProtoBufRpc.Protocol.Binary.rpc
+    encoding:  { rpc: args.json ?
+        ProtoBufRpc.Encoding.Json.rpc : ProtoBufRpc.Encoding.Binary.rpc
     }
 });
 

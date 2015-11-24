@@ -28,7 +28,7 @@ parser.addArgument(['--xhr-port'], {
     nargs: '?'
 });
 parser.addArgument(['-j', '--json'], {
-    help: 'JSON protocol [default: false]', defaultValue: false,
+    help: 'JSON encoding [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
 
