@@ -107,7 +107,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    var Protocol = {
+    var Encoding = {
         Binary: {
             rpc: {
                 encode: function (msg) {
@@ -214,30 +214,30 @@
         service_cls.prototype.transport = self.transport;
         assert(service_cls.prototype.transport);
 
-        assert(self.protocol === undefined);
-        if (opts.protocol === undefined) {
-            self.protocol = Protocol.Binary;
+        assert(self.encoding === undefined);
+        if (opts.encoding === undefined) {
+            self.encoding = Encoding.Binary;
         } else {
-            self.protocol = opts.protocol;
-            if (self.protocol.rpc === undefined) {
-                self.protocol.rpc = Protocol.Binary.rpc;
+            self.encoding = opts.encoding;
+            if (self.encoding.rpc === undefined) {
+                self.encoding.rpc = Encoding.Binary.rpc;
             } else {
-                if (self.protocol.rpc.encode === undefined)
-                    self.protocol.rpc.encode = Protocol.Binary.rpc.encode;
-                if (self.protocol.rpc.decode === undefined)
-                    self.protocol.rpc.decode = Protocol.Binary.rpc.decode;
+                if (self.encoding.rpc.encode === undefined)
+                    self.encoding.rpc.encode = Encoding.Binary.rpc.encode;
+                if (self.encoding.rpc.decode === undefined)
+                    self.encoding.rpc.decode = Encoding.Binary.rpc.decode;
             }
-            if (self.protocol.msg === undefined) {
-                self.protocol.msg = Protocol.Binary.msg;
+            if (self.encoding.msg === undefined) {
+                self.encoding.msg = Encoding.Binary.msg;
             } else {
-                if (self.protocol.msg.encode === undefined)
-                    self.protocol.msg.encode = Protocol.Binary.msg.encode;
-                if (self.protocol.msg.decode === undefined)
-                    self.protocol.msg.decode = Protocol.Binary.msg.decode;
+                if (self.encoding.msg.encode === undefined)
+                    self.encoding.msg.encode = Encoding.Binary.msg.encode;
+                if (self.encoding.msg.decode === undefined)
+                    self.encoding.msg.decode = Encoding.Binary.msg.decode;
             }
         }
-        service_cls.prototype.protocol = self.protocol;
-        assert(service_cls.prototype.protocol);
+        service_cls.prototype.encoding = self.encoding;
+        assert(service_cls.prototype.encoding);
 
         assert(self.return_cls === undefined);
         if (opts.return_cls === undefined) {
@@ -268,7 +268,7 @@
 
         assert(self.on_msg === undefined);
         self.on_msg = function (buf) {
-            var rpc_res = self.protocol.rpc.decode(self.rpc_message.Response, buf);
+            var rpc_res = self.encoding.rpc.decode(self.rpc_message.Response, buf);
             if (self.do_msg[rpc_res.id]) {
                 self.do_msg[rpc_res.id](rpc_res.data);
                 delete self.do_msg[rpc_res.id];
@@ -284,14 +284,14 @@
         return new service_cls(function (method, req, callback) {
             var rpc_req = new self.rpc_message.Request({
                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-                data: self.protocol.msg.encode(req),
+                data: self.encoding.msg.encode(req),
                 name: method
             });
             self.do_msg[rpc_req.id] = function (buf) {
-                callback(null, self.protocol.msg.decode(self.return_cls[method], buf));
+                callback(null, self.encoding.msg.decode(self.return_cls[method], buf));
             };
             self.transport.send(
-                self.protocol.rpc.encode(rpc_req), self.on_msg, function (err) {
+                self.encoding.rpc.encode(rpc_req), self.on_msg, function (err) {
                     if (err) self.on_err(err, rpc_req.id, callback);
                 }
             );
@@ -304,7 +304,7 @@
         return new Service(url, service_cls, opts);
     };
 
-    dcodeIO.ProtoBuf.Rpc.Protocol = Protocol;
+    dcodeIO.ProtoBuf.Rpc.Encoding = Encoding;
     dcodeIO.ProtoBuf.Rpc.Transport = Transport;
 
 ///////////////////////////////////////////////////////////////////////////////
