@@ -27,7 +27,7 @@ parser.addArgument(['--xhr-port'], {
     help: 'XHR Server Port [default: 8089]', defaultValue: 8088,
     nargs: '?'
 });
-parser.addArgument(['-j', '--json-protocol'], {
+parser.addArgument(['-j', '--json'], {
     help: 'JSON protocol [default: false]', defaultValue: false,
     action: 'storeTrue'
 });
@@ -63,7 +63,7 @@ assert.ok(Api);
 function process(data, opts) {
     var rpc_req, req, rpc_res, res;
 
-    if (args.json_protocol) {
+    if (args.json) {
         rpc_req = Rpc.Request.decodeJSON(data);
     } else {
         rpc_req = Rpc.Request.decode(data);
@@ -113,7 +113,7 @@ function process(data, opts) {
         id: rpc_req.id, data: res.toBuffer()
     });
 
-    if (args.json_protocol) {
+    if (args.json) {
         return rpc_res.encodeJSON();
     } else {
         return rpc_res.toBuffer();
@@ -131,7 +131,7 @@ wss.on('connection', function (ws) {
     ws.on('message', function (data, flags) {
 
         if (args.logging) {
-            if (args.json_protocol) {
+            if (args.json) {
                 console.log('[on:message]', data.toString());
             } else {
                 console.log('[on:message]', data);
@@ -156,7 +156,7 @@ var http = Http.createServer(function (req, res) {
         var buffer = Buffer.concat(buffers);
 
         if (args.logging) {
-            if (args.json_protocol) {
+            if (args.json) {
                 console.log('[on:message]', buffer.toString());
             } else {
                 console.log('[on:message]', buffer);

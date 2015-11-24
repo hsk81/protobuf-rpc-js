@@ -113,9 +113,9 @@ if __name__ == "__main__":
     parser.add_argument('--xhr-port', metavar='XHR_PORT', type=int,
         default=os.environ.get('RPC_PORT', 8088), nargs='?',
         help='WS Server Port')
-    parser.add_argument('--json-protocol',
-        default=os.environ.get('JSON_PROTOCOL', False), action='store_true',
-        help='JSON protocol [NOT SUPPORTED]')
+    parser.add_argument('--json',
+        default=os.environ.get('JSON', False), action='store_true',
+        help='JSON encoding [NOT SUPPORTED]')
 
     arguments = parser.parse_args()
     ws_application.listen(arguments.ws_port)
