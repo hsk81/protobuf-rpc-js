@@ -224,6 +224,9 @@ TRANSPORT.onmessage = function (data) {
             req = Api.Reflector.AckRequest.decode(rpc_req.data);
             res = new Api.Reflector.AckResult({timestamp: req.timestamp});
             break;
+     // case '.Calculator.Service.add':
+     //     res = process_add(req);
+     //     break;
         default:
             throw(new Error(rpc_req.name + ': not supported'));
     }
@@ -232,6 +235,8 @@ TRANSPORT.onmessage = function (data) {
     TRANSPORT.send(rpc_rsp.toBuffer());
 };
 ```
+
+Here `TRANSPORT` could for example be a `WebSocket` or an `XMLHttpRequest`, to receive and send messages.
 
 ### QT/C++ `rpc-server`:
 
