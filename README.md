@@ -141,7 +141,7 @@ cd pb-rpc.git && npm install
 Start the server and enable console logging:
 
 ```bash
-cd pb-rpc.git && ./example/server/js/rpc-server.js --logging
+cd pb-rpc.git && npm run rpc-server -- -l
 ```
 
 ### Client Execution
@@ -149,7 +149,7 @@ cd pb-rpc.git && ./example/server/js/rpc-server.js --logging
 Start the client and enable `Reflector` service acknowledgments:
 
 ```bash
-cd pb-rpc.git && ./example/client/js/rpc-client.js --n-ack=1
+cd pb-rpc.git && npm run rpc-client -- -n1
 ```
 
 For the next `10` seconds the client will keep invoking the corresponding functionality on the server, measure the RTT in milli-seconds and log them to the standard output:
