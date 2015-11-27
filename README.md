@@ -265,32 +265,32 @@ When you instantiate the `reflector_svc` service you can provide an additional `
 
 * Binary:
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: '..', encoding: ProtoBuf.Rpc.Encoding.Binary // default
 
 });
 ```
 * JSON:
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: '..', encoding: ProtoBuf.Rpc.Encoding.JSON
 });
 ```
 * Base64:
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: '..', encoding: ProtoBuf.Rpc.Encoding.Base64
 });
 ```
 * Hex:
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: '..', encoding: ProtoBuf.Rpc.Encoding.Hex
 });
 ```
 * Delimited:
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: '..', encoding: ProtoBuf.Rpc.Encoding.Delimited
 });
 ```
@@ -351,36 +351,36 @@ When you instantiate the `reflector_svc` service you can provide an additional `
 
 * For `WebSocket` (asynchronous):
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Ws,
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
+    transport: ProtoBuf.Rpc.Transport.Ws,
     url: 'ws://localhost:8089'
 });
 ```
 
 * For `XMLHttpRequest` (asynchronous):
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Xhr,
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
+    transport: ProtoBuf.Rpc.Transport.Xhr,
     url: 'http://localhost:8088'
 });
 ```
 
 * For `XMLHttpRequest` (synchronous):
 ```js
-var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Xhr.bind(null, {sync: true}),
+var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
+    transport: ProtoBuf.Rpc.Transport.Xhr.bind(null, {sync: true}),
     url: 'http://localhost:8088'
 });
 ```
 
-If the `transport` parameter is omitted, then by default `ProtoBufRpc.Transport.Ws` for WebSockets will be used. It sends its requests *asynchronously*, whereas the `ProtoBufRpc.Transport.Xhr` transport sends them either *asynchronously* or *synchronously*.
+If the `transport` parameter is omitted, then by default `ProtoBuf.Rpc.Transport.Ws` for WebSockets will be used. It sends its requests *asynchronously*, whereas the `ProtoBuf.Rpc.Transport.Xhr` transport sends them either *asynchronously* or *synchronously*.
 
 ### Custom implementation
 
 By providing a constructor defining the `open` and `send` functions, it is easily possible to introduce a custom transport layer:
 
 ```js
-var my_service = new ProtoBufRpc(My.Service, {
+var my_service = new ProtoBuf.Rpc(My.Service, {
     url: 'my-transport://host:port', transport: function (opts) {
         this.open = function (url) {
             this.my_url = url;
