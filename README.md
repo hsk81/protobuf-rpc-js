@@ -401,7 +401,7 @@ var my_service = new ProtoBuf.Rpc(My.Service, {
 });
 ```
 
-Any property of the transport can be accessed via `reflector_svc.transport`, for example `reflector_svc.transport.my_url` or `reflector_svc.transport.my_socket`.
+Any property of the transport can be accessed via `my_service.transport`, for example `my_service.transport.my_url` or `my_service.transport.my_socket`.
 
 ## Acknowledgments
 
