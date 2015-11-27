@@ -77,7 +77,7 @@
         Xhr: function (opts) {
             this.open = function (url) {
                 this.socket = new function () {
-                    var me = this, _ = setTimeout(function () {
+                    var me = this; setTimeout(function () {
                         if (me.onopen) me.onopen();
                     }, 0);
                 };

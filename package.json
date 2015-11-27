@@ -11,7 +11,8 @@
   "devDependencies": {
     "argparse": "^1.0.3",
     "paperboy": "0.0.5",
-    "protobufjs": "^4.1.3"
+    "protobufjs": "^4.1.3",
+    "uglify-js": "^2.6.1"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "keywords": [
@@ -29,6 +30,12 @@
   "repository": {
     "url": "git+https://github.com/hsk81/protobuf-rpc-js.git",
     "type": "git"
+  },
+  "scripts": {
+    "uglify": "./node_modules/uglify-js/bin/uglifyjs",
+    "minify": "./node_modules/uglify-js/bin/uglifyjs --comments -o dist/protobuf-rpc.min.js --source-map=dist/protobuf-rpc.min.map dist/protobuf-rpc.js",
+    "rpc-client": "./example/client/js/rpc-client.js",
+    "rpc-server": "./example/server/js/rpc-server.js"
   },
   "version": "1.1.2"
 }
