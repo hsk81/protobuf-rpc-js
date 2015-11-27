@@ -38,16 +38,16 @@ parser.addArgument(['-n', '--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
 });
 parser.addArgument(['-a', '--n-add'], {
-    nargs: '?', help: 'ADD Workers', defaultValue: 1
+    nargs: '?', help: 'ADD Workers', defaultValue: 0
 });
 parser.addArgument(['-s', '--n-sub'], {
-    nargs: '?', help: 'SUB Workers', defaultValue: 1
+    nargs: '?', help: 'SUB Workers', defaultValue: 0
 });
 parser.addArgument(['-m', '--n-mul'], {
-    nargs: '?', help: 'MUL Workers', defaultValue: 1
+    nargs: '?', help: 'MUL Workers', defaultValue: 0
 });
 parser.addArgument(['-d', '--n-div'], {
-    nargs: '?', help: 'DIV Workers', defaultValue: 1
+    nargs: '?', help: 'DIV Workers', defaultValue: 0
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ assert(Api);
 
 var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     url: 'http://' + args.xhr_host + ':' + args.xhr_port,
-    transport: ProtoBufRpc.Transport.Xhr,
+    transport: new ProtoBufRpc.Transport.Xhr({sync: false}),
     encoding:  { rpc: args.json ?
         ProtoBufRpc.Encoding.Json.rpc : ProtoBufRpc.Encoding.Binary.rpc
     }

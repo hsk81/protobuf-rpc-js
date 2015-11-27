@@ -41,7 +41,7 @@
     var SERVICE = {
         Reflector: (function () {
             return SYSTEM.Service(SYSTEM.Api.Reflector.Service, {
-                transport: SYSTEM.Transport.Xhr,
+                transport: new SYSTEM.Transport.Xhr({sync: true}),
                 url: 'http://localhost:8088'
             });
         }()),

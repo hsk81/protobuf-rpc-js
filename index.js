@@ -66,10 +66,10 @@ function map_to(service_cls) {
 ///////////////////////////////////////////////////////////////////////////////
 
 var Transport = {
-    Ws: function () {
+    Ws: function (opts) {
         this.open = function (url) {
             this.socket = new WebSocket(url);
-            this.socket.binaryType = 'arraybuffer';
+            this.socket.binaryType = opts && opts.binaryType||'arraybuffer';
         };
         this.send = function (buffer, msg_callback, err_callback) {
             this.socket.onmessage = function (ev) {
@@ -81,7 +81,7 @@ var Transport = {
             this.socket.send(buffer);
         };
     },
-    Xhr: function () {
+    Xhr: function (opts) {
         this.open = mine(function (self, url) {
             setTimeout(function () { self.socket.emit('open'); }, 0);
             self.socket = new EventEmitter();
@@ -89,12 +89,11 @@ var Transport = {
         });
         this.send = function (buffer, msg_callback, err_callback) {
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', this.url, true);
+            xhr.open('POST', this.url, !opts||!opts.sync);
             xhr.onreadystatechange = function () {
                 if (this.readyState !== this.DONE) {
                     return;
                 }
-
                 if (this.status === 200) {
                     var bb = ProtoBuf.ByteBuffer.fromBinary(
                         this.responseText
@@ -145,6 +144,24 @@ var Encoding = {
             },
             decode: function (cls, buf) {
                 return cls.decodeJSON(buf);
+            }
+        }
+    },
+    Base64: {
+        rpc: {
+            encode: function (msg) {
+                return msg.encode64();
+            },
+            decode: function (cls, buf) {
+                return cls.decode64(buf);
+            }
+        },
+        msg: {
+            encode: function (msg) {
+                return msg.encode64();
+            },
+            decode: function (cls, buf) {
+                return cls.decode64(buf);
             }
         }
     },
@@ -223,7 +240,8 @@ var Service = mine(function (self, service_cls, opts) {
         }();
         self.transport.open(self.url);
     } else {
-        self.transport = new opts.transport();
+        self.transport = typeof opts.transport === 'function' ?
+            new opts.transport() : opts.transport;
         assert(self.transport.open, 'transport.open required');
         self.transport.open(self.url);
         assert(self.transport.send, 'transport.send required');
@@ -235,7 +253,8 @@ var Service = mine(function (self, service_cls, opts) {
     if (opts.encoding === undefined) {
         self.encoding = Encoding.Binary;
     } else {
-        self.encoding = opts.encoding;
+        self.encoding = typeof opts.encoding === 'function' ?
+            new opts.encoding() : opts.encoding;
         if (self.encoding.rpc === undefined) {
             self.encoding.rpc = Encoding.Binary.rpc;
         } else {
