@@ -292,7 +292,7 @@ var reflector_svc = new ProtoBufRpc(Reflector.Service, {
 
 ### Custom implementation
 
-By providing an object defining `rpc.encode`, `rpc.decode`, `msg.encode`, and `msg.decode` functions, it is very easily possible to introduce a custom encoding layer. The former two encode/decode the RPC frame messages, while the latter two encode/decode the data within the frame messages.
+By providing an object defining `rpc.encode`, `rpc.decode`, `msg.encode`, and `msg.decode` functions, it is easily possible to introduce a custom encoding layer. The former two encode/decode the RPC frame messages, while the latter two encode/decode the data within the frame messages.
 
 ```js
 var my_service = new ProtoBuf.Rpc(My.Service, {
@@ -327,7 +327,7 @@ Possible encoders and decoders are (see also [Protobuf.Message](https://htmlprev
 |Hex       |`msg.encodeHex()`       |`cls.decodeHex(buf)`       |
 |Delimited |`msg.encodeDelimited()` |`cls.decodeDelimited(buf)` |
 
-It is also possible to put a custom `encoding` by mixing the pre-defined encodings, for example:
+It is also possible to creating a custom `encoding` by mixing the pre-defined encodings, for example:
 
 ```js
 var my_service = new ProtoBuf.Rpc(My.Service, {
@@ -338,16 +338,17 @@ var my_service = new ProtoBuf.Rpc(My.Service, {
 });
 ```
 
-This encoding will use `Binary` for the RPC frame messages, whereas the actual data will be processed with `Base64`.
+This encoding will use `Binary` for the RPC frame messages, whereas the actual data will be processed with `Base64`. Further, the encoding functions can be accessed via `my_service.encoding.{rpc,msg}.{encode,decode}`.
+
 
 ## Transport Alternatives
 
 When you instantiate the `reflector_svc` service you can provide an additional `transport` parameter:
 
-* For `WebSocket` (asynchronous only):
+* For `WebSocket` (asynchronous):
 ```js
 var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Ws, // asynchronous
+    transport: ProtoBufRpc.Transport.Ws,
     url: 'ws://localhost:8089'
 });
 ```
@@ -355,7 +356,7 @@ var reflector_svc = new ProtoBufRpc(Reflector.Service, {
 * For `XMLHttpRequest` (asynchronous):
 ```js
 var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Xhr, // async
+    transport: ProtoBufRpc.Transport.Xhr,
     url: 'http://localhost:8088'
 });
 ```
@@ -363,16 +364,16 @@ var reflector_svc = new ProtoBufRpc(Reflector.Service, {
 * For `XMLHttpRequest` (synchronous):
 ```js
 var reflector_svc = new ProtoBufRpc(Reflector.Service, {
-    transport: ProtoBufRpc.Transport.Xhr.bind(null, {sync: true}), // sync
+    transport: ProtoBufRpc.Transport.Xhr.bind(null, {sync: true}),
     url: 'http://localhost:8088'
 });
 ```
 
-If the `transport` parameter is omitted, then by default the `ProtoBufRpc.Transport.Ws` transport for WebSockets will be used. It sends its requests *asynchronously*, whereas the `ProtoBufRpc.Transport.Xhr` transport sends them either *asynchronously* or *synchronously*.
+If the `transport` parameter is omitted, then by default `ProtoBufRpc.Transport.Ws` for WebSockets will be used. It sends its requests *asynchronously*, whereas the `ProtoBufRpc.Transport.Xhr` transport sends them either *asynchronously* or *synchronously*.
 
 ### Custom implementation
 
-By providing a constructor defining the `open` and `send` functions, it is very easily possible to introduce a custom transport layer:
+By providing a constructor defining the `open` and `send` functions, it is easily possible to introduce a custom transport layer:
 
 ```js
 var my_service = new ProtoBufRpc(My.Service, {
