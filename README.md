@@ -340,7 +340,6 @@ var my_service = new ProtoBuf.Rpc(My.Service, {
 
 This encoding will use `Binary` for the RPC frame messages, whereas the actual data will be processed with `Base64`. Further, the encoding functions can be accessed via `my_service.encoding.{rpc,msg}.{encode,decode}`.
 
-
 ## Transport Alternatives
 
 When you instantiate the `reflector_svc` service you can provide an additional `transport` parameter:
