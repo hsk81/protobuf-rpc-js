@@ -141,7 +141,7 @@ cd pb-rpc.git && npm install
 Start the server and enable console logging:
 
 ```bash
-cd pb-rpc.git && npm run rpc-server -- -l
+cd pb-rpc.git && npm run rpc-server.js -- -l
 ```
 
 ### Client Execution
@@ -149,7 +149,7 @@ cd pb-rpc.git && npm run rpc-server -- -l
 Start the client and enable `Reflector` service acknowledgments:
 
 ```bash
-cd pb-rpc.git && npm run rpc-client -- -n1
+cd pb-rpc.git && npm run rpc-client.js -- -n1
 ```
 
 For the next `10` seconds the client will keep invoking the corresponding functionality on the server, measure the RTT in milli-seconds and log them to the standard output:
@@ -169,10 +169,10 @@ By increasing the numbers assigned to the arguments, for example by setting `--n
 
 ### Client Execution: js-www
 
-The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser support. But you need first to run the corresponding `index.js` static server to be able to provide the `index.html` to a browser:
+The `./example/client/js-www/index.html` demonstrates that the [ProtoBuf.Rpc.js] library has browser support. But you need first to run the corresponding `index.js` static server (via the `www-server.js` NPM script) to be able to provide the `index.html` to a browser:
 
 ```bash
-cd pb-rpc.git && ./example/client/js-www/index.js
+cd pb-rpc.git && npm run www-server.js
 ```
 
 Ensure that your `rpc-server` is still running and then open the `http://localhost:8080` address: On the console the static file server should produce an output similar to:
@@ -246,7 +246,7 @@ A QT/C++ version of `rpc-server` with `<QtWebSockets>` has been implemented.
  
 #### Build:
 
-For the following to work you require a `QT5+` installation with `qmake`. Further, the [protobuf3] package has includes and libraries which are required for compilation and linkage:
+For the following to work a `QT5+` installation with `qmake` is required. Further, the [protobuf3] package contains C++ includes (header files) and corresponding libraries, which are necessary for compilation and linkage:
 
 ```bash
 cd pb-rpc.git && make build-server-cpp
@@ -257,7 +257,7 @@ cd pb-rpc.git && make build-server-cpp
 Once compilation is done, you can run it with:
 
 ```bash
-cd pb-rpc.git && ./example/server/cpp/rpc-server --logging
+cd pb-rpc.git && npm run rpc-server.cpp -- -l
 ```
 
 
@@ -386,9 +386,9 @@ var my_service = new ProtoBuf.Rpc(My.Service, {
     url: 'my-transport://host:port', transport: function (opts) {
         this.open = function (url) {
             this.my_url = url;
-            assert(this.url);
+            assert(this.my_url);
             this.my_socket = new MyTransport(url);
-            assert(this.socket);
+            assert(this.my_socket);
         };
         this.send = function (buffer, msg_callback, err_callback) {
             this.my_socket.onmessage = function (ev) {

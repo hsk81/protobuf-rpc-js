@@ -34,8 +34,11 @@
   "scripts": {
     "uglify": "./node_modules/uglify-js/bin/uglifyjs",
     "minify": "./node_modules/uglify-js/bin/uglifyjs --comments -o dist/protobuf-rpc.min.js --source-map=dist/protobuf-rpc.min.map dist/protobuf-rpc.js",
-    "rpc-client": "./example/client/js/rpc-client.js",
-    "rpc-server": "./example/server/js/rpc-server.js"
+    "rpc-server.py": "./example/server/py/env/bin/python ./example/server/py/rpc-server.py",
+    "rpc-server.cpp": "./example/server/cpp/build/rpc-server",
+    "rpc-server.js": "./example/server/js/rpc-server.js",
+    "www-server.js": "./example/client/js-www/index.js",
+    "rpc-client.js": "./example/client/js/rpc-client.js"
   },
   "version": "1.1.2"
 }
