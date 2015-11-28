@@ -12,7 +12,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'Paper Server', version: '0.0.1'
+    addHelp: true, description: 'Paper Server', version: '1.1.2'
 });
 parser.addArgument(['-p', '--port'], {
     help: 'Server Port [default: 8080]', defaultValue: 8080, nargs: '?'

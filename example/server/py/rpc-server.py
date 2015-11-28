@@ -103,7 +103,7 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-v', '--version', action='version',
-        version='%(prog)s 1.0.3')
+        version='%(prog)s 1.1.2')
     parser.add_argument('-l', '--logging',
         default=os.environ.get('LOGGING', False), action='store_true',
         help='Logging')

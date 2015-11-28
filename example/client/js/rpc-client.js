@@ -12,7 +12,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Client', version: '1.0.3'
+    addHelp: true, description: 'RPC Client', version: '1.1.2'
 });
 parser.addArgument(['--ws-host'], {
     help: 'WS Server Host [default: localhost]', defaultValue: 'localhost',
