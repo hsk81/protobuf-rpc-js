@@ -1,7 +1,7 @@
 # ProtoBuf.Rpc.js: Lightweight RPC for JavaScript using Protocol Buffers
 
-[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hsk81/protobuf-rpc-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/hsk81/protobuf-rpc-js.svg?branch=master)](https://travis-ci.org/hsk81/protobuf-rpc-js)
+[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hsk81/protobuf-rpc-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [GIT]: https://www.git-scm.com/
 [NPM]: https://www.npmjs.com/
