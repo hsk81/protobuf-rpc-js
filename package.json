@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "argparse": "^1.0.3",
+    "ascli": "^1.0.0",
     "paperboy": "0.0.5",
-    "protobufjs": "^4.1.3",
     "testjs": "^1.0.4",
     "uglify-js": "^2.6.1"
   },
