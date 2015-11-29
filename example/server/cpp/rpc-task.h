@@ -1,51 +1,36 @@
-#ifndef WS_SERVER_H
-#define WS_SERVER_H
+#ifndef RPC_TASK_H
+#define RPC_TASK_H
 
-#include <QtCore/QObject>
-#include <QtCore/QByteArray>
-#include <QtCore/QException>
-#include <QtCore/QList>
-#include <QtCore/QString>
+#include <QObject>
+#include <QRunnable>
+#include <QByteArray>
+#include <QException>
 
 #include "protocol/rpc.pb.h"
 #include "protocol/api.pb.h"
 
-QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
-QT_FORWARD_DECLARE_CLASS(QWebSocket)
-
-class WsServer : public QObject
+class RpcTask : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    explicit WsServer(quint16 port, QObject *parent = 0);
-    ~WsServer();
+    explicit RpcTask(QByteArray bytes, void *socket, QObject *parent = 0);
 
-Q_SIGNALS:
-    void closed();
+signals:
+    void result(QByteArray bytes, void *socket);
 
-private Q_SLOTS:
-    void onConnection();
-    void onBinary(QByteArray message);
-    void onDisconnect();
+protected:
+    void run();
 
 private:
-    bool m_logging;
-public:
-    bool getLogging() { return m_logging; }
-    void setLogging(bool value) { m_logging = value; }
-
-private:
-    QWebSocketServer *m_server;
-    QList<QWebSocket*> m_clients;
+    QByteArray m_bytes;
+    void *m_socket;
 
 private:
     Rpc_Request m_req;
     Rpc_Response m_res;
-
 private:
     Reflector::AckRequest m_ack_req;
     Reflector::AckResult m_ack_res;
-
 private:
     Calculator::AddRequest m_add_req;
     Calculator::AddResult m_add_res;
@@ -55,6 +40,9 @@ private:
     Calculator::MulResult m_mul_res;
     Calculator::DivRequest m_div_req;
     Calculator::DivResult m_div_res;
+
+private:
+    QByteArray process(QByteArray);
 };
 
 class RpcException : public QException
@@ -73,4 +61,4 @@ public:
     QString m_message;
 };
 
-#endif // WS_SERVER_H
+#endif // RPC_TASK_H

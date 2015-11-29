@@ -1,58 +1,21 @@
-#include "ws-server.h"
-#include "protocol/rpc.pb.h"
-#include "protocol/api.pb.h"
+#include "rpc-task.h"
 
-#include <QtWebSockets/QtWebSockets>
+#include <QByteArray>
 #include <QDebug>
+#include <QObject>
+#include <QRunnable>
 
-QT_USE_NAMESPACE
-
-WsServer::WsServer(quint16 port, QObject *parent) : QObject(parent), m_logging(false) {
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-    QString name = QStringLiteral("ws-server");
-    QWebSocketServer::SslMode mode = QWebSocketServer::NonSecureMode;
-
-    m_server = new QWebSocketServer(name, mode);
-    Q_ASSERT(m_server);
-    bool listening = m_server->listen(QHostAddress::Any, port);
-    Q_ASSERT(listening);
-
-    QObject::connect(
-                m_server, &QWebSocketServer::newConnection, this, &WsServer::onConnection);
-    QObject::connect(
-                m_server, &QWebSocketServer::closed, this, &WsServer::closed);
+RpcTask::RpcTask(QByteArray bytes, void *socket, QObject *parent)
+    : m_bytes(bytes), m_socket(socket) {
 }
 
-WsServer::~WsServer() {
-    m_server->close();
-    Q_ASSERT(!m_server->isListening());
-
-    qDeleteAll(m_clients.begin(), m_clients.end());
-    Q_ASSERT(m_clients.empty());
+void RpcTask::run() {
+    QByteArray bytes = process(m_bytes);
+    Q_ASSERT(bytes.length() > 0);
+    emit result(bytes, m_socket);
 }
 
-void WsServer::onConnection() {
-    QWebSocket *socket = m_server->nextPendingConnection();
-    Q_ASSERT(socket);
-
-    QObject::connect(
-                socket, &QWebSocket::binaryMessageReceived, this, &WsServer::onBinary);
-    QObject::connect(
-                socket, &QWebSocket::disconnected, this, &WsServer::onDisconnect);
-
-    m_clients << socket;
-    Q_ASSERT(!m_clients.empty());
-}
-
-void WsServer::onBinary(QByteArray req_msg) {
-    QWebSocket *client = qobject_cast<QWebSocket*>(sender());
-    Q_ASSERT(client);
-
-    if (this->getLogging()) {
-        qDebug() << "[on:message]" << req_msg.toBase64();
-    }
-
+QByteArray RpcTask::process(QByteArray req_msg) {
     const void *req_data = req_msg.constData();
     Q_ASSERT(req_data);
     int req_size = req_msg.length();
@@ -103,17 +66,5 @@ void WsServer::onBinary(QByteArray req_msg) {
     m_res.SerializeToArray(res_msg.data(), res_size);
     Q_ASSERT(res_msg.size() == res_size);
 
-    client->sendBinaryMessage(res_msg);
-}
-
-void WsServer::onDisconnect() {
-    QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    Q_ASSERT(client);
-
-    int length = m_clients.count();
-    Q_ASSERT(length > 0);
-    m_clients.removeAll(client);
-    Q_ASSERT(m_clients.count() < length);
-
-    client->deleteLater();
+    return res_msg;
 }

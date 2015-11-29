@@ -18,14 +18,16 @@ SOURCES += main.cpp \
     protocol/calculator.pb.cc \
     protocol/reflector.pb.cc \
     protocol/rpc.pb.cc \
-    ws-server.cpp
+    rpc-server.cpp \
+    rpc-task.cpp
 
 HEADERS += \
     protocol/api.pb.h \
     protocol/calculator.pb.h \
     protocol/reflector.pb.h \
     protocol/rpc.pb.h \
-    ws-server.h
+    rpc-task.h \
+    rpc-server.h
 
 INCLUDEPATH += /usr/include
 LIBS += -L/usr/lib/ -lprotobuf -pthread  -lpthread
