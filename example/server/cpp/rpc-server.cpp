@@ -30,7 +30,7 @@ RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent) : QObje
     QObject::connect(
                 m_server_ws, &QWebSocketServer::closed, this, &RpcServer::closed);
 
-    QThreadPool::globalInstance()->setMaxThreadCount(999);
+    QThreadPool::globalInstance()->setMaxThreadCount(16);
 }
 
 RpcServer::~RpcServer() {
