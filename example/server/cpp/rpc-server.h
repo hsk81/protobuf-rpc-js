@@ -46,7 +46,8 @@ public:
     void setLogging(bool value) { m_logging = value; }
 
 private:
-    QByteArray HttpBody(QByteArray);
+    QByteArray PutHttpHeaders(QByteArray);
+    QByteArray GetHttpBody(QByteArray);
 };
 
 #endif // RPC_SERVER_H

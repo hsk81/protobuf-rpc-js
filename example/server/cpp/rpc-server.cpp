@@ -30,7 +30,7 @@ RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent) : QObje
     QObject::connect(
                 m_server_ws, &QWebSocketServer::closed, this, &RpcServer::closed);
 
-    QThreadPool::globalInstance()->setMaxThreadCount(16);
+    QThreadPool::globalInstance()->setMaxThreadCount(256);
 }
 
 RpcServer::~RpcServer() {
@@ -82,7 +82,7 @@ void RpcServer::onTcpMessage() {
         qDebug() << "[on:message]" << bytes.toBase64();
     }
 
-    RpcTask *rpc_task = new RpcTask(HttpBody(bytes), socket);
+    RpcTask *rpc_task = new RpcTask(GetHttpBody(bytes), socket);
     rpc_task->setAutoDelete(true);
 
     QObject::connect(
@@ -95,12 +95,16 @@ void RpcServer::onTcpMessage() {
 void RpcServer::onTcpTask(QByteArray bytes, void *client) {
     QTcpSocket *socket = (QTcpSocket*)client;
     Q_ASSERT(socket != NULL);
-    qint64 written = socket->write(bytes, bytes.length());
-    Q_ASSERT(written == bytes.length());
+    QByteArray http = PutHttpHeaders(bytes);
+    Q_ASSERT(http.length() > bytes.length());
+    qint64 written = socket->write(http, http.length());
+    Q_ASSERT(written == http.length());
     bool flushed = socket->flush();
     Q_ASSERT(flushed);
     qint64 to_write = socket->bytesToWrite();
     Q_ASSERT(to_write == 0);
+
+    socket->close();
 }
 
 void RpcServer::onWsConnection() {
@@ -152,7 +156,25 @@ void RpcServer::onWsTask(QByteArray bytes, void *client) {
     Q_ASSERT(sent == bytes.length());
 }
 
-QByteArray RpcServer::HttpBody(QByteArray bytes) {
+QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
+    QDateTime datetime = QDateTime::currentDateTimeUtc();
+
+    QByteArray date = "Date: ";
+    date.append(datetime.date().toString()).append(" ");
+    date.append(datetime.time().toString()).append(" ");
+    date.append("GMT");
+
+    QByteArray response = "HTTP/1.1 200 OK";
+    response.append("\r\n").append("Access-Control-Allow-Origin: *");
+    response.append("\r\n").append(date);
+    response.append("\r\n").append("Connection: keep-alive");
+    response.append("\r\n").append("Content-Length: 38");
+    response.append("\r\n").append("\r\n");
+
+    return response.append(bytes);
+}
+
+QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
     QList<QByteArray> lines = bytes.split('\n');
     Q_ASSERT(lines.length() > 0);
 
