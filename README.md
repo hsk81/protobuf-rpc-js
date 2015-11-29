@@ -43,14 +43,10 @@ The `ack` method allows to measure the round trip time (RTT) from the client to 
 
 ```js
 var ProtoBuf = require('protobufjs');
-assert(ProtoBuf);
 ProtoBuf.Rpc = require('protobufjs-rpc');
-assert(ProtoBuf.Rpc);
 
-var ReflectorFactory = ProtoBuf.loadProtoFile('uri/for/reflector.proto');
-assert(ReflectorFactory);
-var Reflector = ReflectorFactory.build('Reflector');
-assert(Reflector);
+var ReflectorFactory = ProtoBuf.loadProtoFile('uri/for/reflector.proto'),
+    Reflector = ReflectorFactory.build('Reflector');
 
 var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: 'http://localhost:8089'
