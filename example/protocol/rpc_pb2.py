@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='',
   syntax='proto3',
-  serialized_pb=b'\n\trpc.proto\"^\n\x03Rpc\x1a\x31\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\x1a$\n\x08Response\x12\n\n\x02id\x18\x02 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\x62\x06proto3'
+  serialized_pb=b'\n\trpc.proto\"^\n\x03Rpc\x1a\x31\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x07\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\x1a$\n\x08Response\x12\n\n\x02id\x18\x02 \x01(\x07\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\x62\x06proto3'
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -40,7 +40,7 @@ _RPC_REQUEST = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='id', full_name='Rpc.Request.id', index=1,
-      number=2, type=13, cpp_type=3, label=1,
+      number=2, type=7, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -77,7 +77,7 @@ _RPC_RESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='id', full_name='Rpc.Response.id', index=0,
-      number=2, type=13, cpp_type=3, label=1,
+      number=2, type=7, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,

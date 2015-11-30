@@ -123,8 +123,8 @@ void protobuf_AddDesc_rpc_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\trpc.proto\"^\n\003Rpc\0321\n\007Request\022\014\n\004name\030\001 "
-    "\001(\t\022\n\n\002id\030\002 \001(\r\022\014\n\004data\030\003 \001(\014\032$\n\010Respons"
-    "e\022\n\n\002id\030\002 \001(\r\022\014\n\004data\030\003 \001(\014b\006proto3", 115);
+    "\001(\t\022\n\n\002id\030\002 \001(\007\022\014\n\004data\030\003 \001(\014\032$\n\010Respons"
+    "e\022\n\n\002id\030\002 \001(\007\022\014\n\004data\030\003 \001(\014b\006proto3", 115);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "rpc.proto", &protobuf_RegisterTypes);
   Rpc::default_instance_ = new Rpc();
@@ -253,16 +253,16 @@ bool Rpc_Request::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(16)) goto parse_id;
+        if (input->ExpectTag(21)) goto parse_id;
         break;
       }
 
-      // optional uint32 id = 2;
+      // optional fixed32 id = 2;
       case 2: {
-        if (tag == 16) {
+        if (tag == 21) {
          parse_id:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_FIXED32>(
                  input, &id_)));
 
         } else {
@@ -319,9 +319,9 @@ void Rpc_Request::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFixed32(2, this->id(), output);
   }
 
   // optional bytes data = 3;
@@ -347,9 +347,9 @@ void Rpc_Request::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteFixed32ToArray(2, this->id(), target);
   }
 
   // optional bytes data = 3;
@@ -373,11 +373,9 @@ int Rpc_Request::ByteSize() const {
         this->name());
   }
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt32Size(
-        this->id());
+    total_size += 1 + 4;
   }
 
   // optional bytes data = 3;
@@ -542,11 +540,11 @@ bool Rpc_Response::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional uint32 id = 2;
+      // optional fixed32 id = 2;
       case 2: {
-        if (tag == 16) {
+        if (tag == 21) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_FIXED32>(
                  input, &id_)));
 
         } else {
@@ -593,9 +591,9 @@ failure:
 void Rpc_Response::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:Rpc.Response)
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFixed32(2, this->id(), output);
   }
 
   // optional bytes data = 3;
@@ -610,9 +608,9 @@ void Rpc_Response::SerializeWithCachedSizes(
 ::google::protobuf::uint8* Rpc_Response::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:Rpc.Response)
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteFixed32ToArray(2, this->id(), target);
   }
 
   // optional bytes data = 3;
@@ -629,11 +627,9 @@ void Rpc_Response::SerializeWithCachedSizes(
 int Rpc_Response::ByteSize() const {
   int total_size = 0;
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   if (this->id() != 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt32Size(
-        this->id());
+    total_size += 1 + 4;
   }
 
   // optional bytes data = 3;
@@ -919,7 +915,7 @@ void Rpc_Request::clear_name() {
   // @@protoc_insertion_point(field_set_allocated:Rpc.Request.name)
 }
 
-// optional uint32 id = 2;
+// optional fixed32 id = 2;
 void Rpc_Request::clear_id() {
   id_ = 0u;
 }
@@ -980,7 +976,7 @@ void Rpc_Request::clear_data() {
 
 // Rpc_Response
 
-// optional uint32 id = 2;
+// optional fixed32 id = 2;
 void Rpc_Response::clear_id() {
   id_ = 0u;
 }

@@ -287,10 +287,10 @@ var Service = mine(function (self, service_cls, opts) {
         var rpc_factory = ProtoBuf.loadProto(
             'syntax = "proto3"; message Rpc {' +
                 'message Request {' +
-                    'string name=1; uint32 id=2; bytes data=3;' +
+                    'string name=1; fixed32 id=2; bytes data=3;' +
                 '}' +
                 'message Response {' +
-                    'uint32 id=2; bytes data=3;' +
+                    'fixed32 id=2; bytes data=3;' +
                 '}' +
             '}'
         );

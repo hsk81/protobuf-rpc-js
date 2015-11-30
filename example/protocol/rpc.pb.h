@@ -107,7 +107,7 @@ class Rpc_Request : public ::google::protobuf::Message {
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   void clear_id();
   static const int kIdFieldNumber = 2;
   ::google::protobuf::uint32 id() const;
@@ -198,7 +198,7 @@ class Rpc_Response : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional uint32 id = 2;
+  // optional fixed32 id = 2;
   void clear_id();
   static const int kIdFieldNumber = 2;
   ::google::protobuf::uint32 id() const;
@@ -355,7 +355,7 @@ inline void Rpc_Request::set_allocated_name(::std::string* name) {
   // @@protoc_insertion_point(field_set_allocated:Rpc.Request.name)
 }
 
-// optional uint32 id = 2;
+// optional fixed32 id = 2;
 inline void Rpc_Request::clear_id() {
   id_ = 0u;
 }
@@ -416,7 +416,7 @@ inline void Rpc_Request::set_allocated_data(::std::string* data) {
 
 // Rpc_Response
 
-// optional uint32 id = 2;
+// optional fixed32 id = 2;
 inline void Rpc_Response::clear_id() {
   id_ = 0u;
 }

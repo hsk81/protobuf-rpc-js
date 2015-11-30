@@ -162,7 +162,7 @@ QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
             .toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss")
             .append(" GMT");
 
-    QByteArray content = (new QString(bytes))->toLatin1();
+    QString content = QString::fromLatin1(bytes);
     Q_ASSERT(content.length() > 0);
 
     QByteArray response = "HTTP/1.1 200 OK";
