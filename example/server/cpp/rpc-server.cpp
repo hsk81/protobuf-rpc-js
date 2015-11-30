@@ -171,7 +171,8 @@ QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
     response.append("\r\n").append("Content-Length: 38");
     response.append("\r\n").append("\r\n");
 
-    return response.append(bytes);
+    QString *string = new QString(bytes);
+    return response.append(string->toLatin1());
 }
 
 QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
