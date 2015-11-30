@@ -319,7 +319,7 @@ var Service = mine(function (self, service_cls, opts) {
 
     return new service_cls(function (method, req, callback) {
         var rpc_req = new self.rpc_message.Request({
-            id: crypto.randomBytes(4).readUInt32LE(),
+            id: crypto.randomBytes(4).readUInt32LE() % 128,
             data: self.encoding.msg.encode(req),
             name: method
         });

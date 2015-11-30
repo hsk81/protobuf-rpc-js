@@ -177,11 +177,11 @@ QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
             .append("keep-alive");
     response.append("\r\n")
             .append("Content-Length: ")
-            .append(QString::number(bytes.length()));
+            .append(QString::number(content.length()));
     response.append("\r\n")
             .append("\r\n");
 
-    return response.append(bytes);
+    return response.append(content);
 }
 
 QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
