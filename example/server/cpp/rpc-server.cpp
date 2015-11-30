@@ -9,7 +9,9 @@
 
 QT_USE_NAMESPACE
 
-RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent) : QObject(parent), m_logging(false) {
+RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent)
+    : QObject(parent), m_logging(false)
+{
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     m_server_tcp = new QTcpServer();
@@ -79,7 +81,7 @@ void RpcServer::onTcpMessage() {
     Q_ASSERT(bytes.length() > 0);
 
     if (this->getLogging()) {
-        qDebug() << "[on:message]" << bytes.toBase64();
+        qDebug() << "[on:message]" << bytes;
     }
 
     RpcTask *rpc_task = new RpcTask(GetHttpBody(bytes), socket);
@@ -139,7 +141,7 @@ void RpcServer::onWsMessage(QByteArray bytes) {
     Q_ASSERT(client);
 
     if (this->getLogging()) {
-        qDebug() << "[on:message]" << bytes.toBase64();
+        qDebug() << "[on:message]" << bytes;
     }
 
     RpcTask *rpc_task = new RpcTask(bytes, client);
