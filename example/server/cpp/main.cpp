@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
-    app.setApplicationVersion("1.1.2");
+    app.setApplicationVersion("1.1.7");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("RPC Server");
