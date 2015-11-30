@@ -158,41 +158,44 @@ void RpcServer::onWsTask(QByteArray bytes, void *client) {
 }
 
 QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
-    QDateTime dt = QDateTime::currentDateTimeUtc();
-    QString gmt = QLocale::c().toString(dt, "ddd, dd MMM yyyy hh:mm:ss")
+    QString gmt = QLocale::c()
+            .toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss")
             .append(" GMT");
 
-    QByteArray response = (new QString("HTTP/1.1 200 OK"))->toLatin1();
+    QByteArray content = (new QString(bytes))->toLatin1();
+    Q_ASSERT(content.length() > 0);
+
+    QByteArray response = "HTTP/1.1 200 OK";
     response.append("\r\n")
             .append("Access-Control-Allow-Origin: ")
-            .append((new QString("*"))->toUtf8());
+            .append("*");
     response.append("\r\n")
             .append("Data: ")
-            .append((new QString(gmt))->toUtf8());
+            .append(gmt);
     response.append("\r\n")
             .append("Connection: ")
-            .append((new QString("keep-alive"))->toUtf8());
+            .append("keep-alive");
     response.append("\r\n")
             .append("Content-Length: ")
-            .append((new QString("38"))->toUtf8());
+            .append(QString::number(bytes.length()));
     response.append("\r\n")
             .append("\r\n");
 
-    return response.append((new QString(bytes))->toLatin1());
+    return response.append(bytes);
 }
 
 QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
     QList<QByteArray> lines = bytes.split('\n');
-    Q_ASSERT(lines.length() > 0);
 
     int i = 0;
     foreach(QByteArray line, lines) {
         if (line.length() > 0) {
             i += line.length();
         } else {
+            i += 2; // "\r\n"
             break;
         }
     }
 
-    return bytes.mid(i + 6);
+    return bytes.mid(i + 4);
 }
