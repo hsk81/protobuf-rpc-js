@@ -30,7 +30,7 @@ RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent) : QObje
     QObject::connect(
                 m_server_ws, &QWebSocketServer::closed, this, &RpcServer::closed);
 
-    QThreadPool::globalInstance()->setMaxThreadCount(256);
+    QThreadPool::globalInstance()->setMaxThreadCount(16);
 }
 
 RpcServer::~RpcServer() {
@@ -93,19 +93,21 @@ void RpcServer::onTcpMessage() {
 }
 
 void RpcServer::onTcpTask(QByteArray bytes, void *client) {
+    Q_ASSERT(bytes.length() > 0);
+
     QTcpSocket *socket = (QTcpSocket*)client;
     Q_ASSERT(socket != NULL);
     QByteArray http = PutHttpHeaders(bytes);
     Q_ASSERT(http.length() > bytes.length());
     qint64 written = socket->write(http, http.length());
     Q_ASSERT(written == http.length());
-    bool flushed = socket->flush();
-    Q_ASSERT(flushed);
-    qint64 to_write = socket->bytesToWrite();
-    Q_ASSERT(to_write == 0);
 
-    socket->waitForBytesWritten(-1);
-    socket->close();
+    //bool flushed = socket->flush();
+    //Q_ASSERT(flushed);
+    //bool waited = socket->waitForBytesWritten(-1);
+    //Q_ASSERT(waited);
+    //qint64 to_write = socket->bytesToWrite();
+    //Q_ASSERT(to_write == 0);
 }
 
 void RpcServer::onWsConnection() {
@@ -162,9 +164,6 @@ QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
             .toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss")
             .append(" GMT");
 
-    QString content = QString::fromLatin1(bytes);
-    Q_ASSERT(content.length() > 0);
-
     QByteArray response = "HTTP/1.1 200 OK";
     response.append("\r\n")
             .append("Access-Control-Allow-Origin: ")
@@ -177,11 +176,11 @@ QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
             .append("keep-alive");
     response.append("\r\n")
             .append("Content-Length: ")
-            .append(QString::number(content.length()));
+            .append(QString::number(bytes.length()));
     response.append("\r\n")
             .append("\r\n");
 
-    return response.append(content);
+    return response.append(bytes);
 }
 
 QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
