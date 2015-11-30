@@ -58,7 +58,7 @@ QByteArray RpcTask::process(QByteArray req_msg) {
     }
 
     m_res.set_id(m_req.id());
-    Q_ASSERT(m_res.id() >= 0);
+    Q_ASSERT(m_res.id() > 0);
     int res_size = m_res.ByteSize();
     Q_ASSERT(res_size);
     QByteArray res_msg(res_size, 0);
