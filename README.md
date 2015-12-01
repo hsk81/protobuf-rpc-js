@@ -94,11 +94,11 @@ As you see the RPC invocation follows a simple request-response pattern, where t
 message Rpc {
     message Request {
         string name = 1;
-        uint32 id = 2;
+        fixed32 id = 2;
         bytes data = 3;
     }
     message Response {
-        uint32 id = 2;
+        fixed32 id = 2;
         bytes data = 3;
     }
 }
@@ -196,16 +196,16 @@ Both `Rpc.Request` and `Rpc.Response` have `data` fields, which is a list of byt
 
 * Rpc.Request:
 ```
-+-----------------------------------------------------------------------------+
-| name=.Reflector.ack|id=<uint32>|data=<[Reflector.AckRequest:timestamp=".."]>|
-+-----------------------------------------------------------------------------+
++------------------------------------------------------------------------------+
+| name=.Reflector.ack|id=<fixed32>|data=<[Reflector.AckRequest:timestamp=".."]>|
++------------------------------------------------------------------------------+
 ```
 
 * Rpc.Response:
 ```
-+-----------------------------------------------------------------------------+
-|  id=<uint32>|data=<[Reflector.AckResponse:timestamp=".."]>                  |
-+-----------------------------------------------------------------------------+
++------------------------------------------------------------------------------+
+|  id=<fixed32>|data=<[Reflector.AckResponse:timestamp=".."]>                  |
++------------------------------------------------------------------------------+
 ```
 
 By default both the request and response messages are sent using a compact binary encoding (without any labels).
