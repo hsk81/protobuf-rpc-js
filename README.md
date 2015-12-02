@@ -2,7 +2,7 @@
 
 [![NPM version][npm-img]][npm-url]
 [![Build Status][travis-img]][travis-url]
-[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js][gitter-url]
+[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js]][gitter-url]
 
 [npm-url]: https://www.npmjs.com/package/gulp
 [npm-img]: https://img.shields.io/npm/v/gulp.svg
