@@ -405,4 +405,4 @@ Any property of the transport can be accessed via `my_service.transport`, for ex
 
 ## Acknowledgments
 
-This library would have not been possible without the support of [dizmo.com](http://dizmo.com), a great company developing the next generation of interface of things.
+This library would have not been possible without the support of [dizmo.com](http://dizmo.com), a great company developing «The Interface of Things».
