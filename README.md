@@ -1,9 +1,14 @@
 # ProtoBuf.Rpc.js: Lightweight RPC for JavaScript using Protocol Buffers
 
-[![NPM version][npm-image]][https://www.npmjs.com/package/protobuf-rpc]
-[![Downloads][downloads-image]][https://www.npmjs.com/package/protobuf-rpc]
-[![Build Status](https://travis-ci.org/hsk81/protobuf-rpc-js.svg?branch=master)](https://travis-ci.org/hsk81/protobuf-rpc-js)
-[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hsk81/protobuf-rpc-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![NPM version][npm-img]][npm-url]
+[![Build Status][travis-image]][travis-url]
+[![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js][gitter-url]
+
+[npm-url]: https://www.npmjs.com/package/gulp
+[npm-img]: https://img.shields.io/npm/v/gulp.svg
+[travis-img]: https://travis-ci.org/hsk81/protobuf-rpc-js.svg?branch=master
+[travis-url]: https://travis-ci.org/hsk81/protobuf-rpc-js
+[gitter-url]: https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hsk81/protobuf-rpc-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 [GIT]: https://www.git-scm.com/
 [NPM]: https://www.npmjs.com/
