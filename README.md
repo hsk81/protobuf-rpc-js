@@ -3,8 +3,8 @@
 [![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/protobuf-rpc)
 [![Codacy](https://img.shields.io/codacy/fd69f5a521ae4448bf41f101a2b34903.svg)](https://www.codacy.com/app/hasan-karahan/protobuf-rpc-js)
 [![Travis](https://img.shields.io/travis/rust-lang/rust.svg)](https://travis-ci.org/hsk81/protobuf-rpc-js)
-[![Gratipay](https://img.shields.io/gratipay/hsk81.svg)](https://gratipay.com/~hsk81/)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/hsk81/protobuf-rpc-js)
+[![Gratipay](https://img.shields.io/gratipay/hsk81.svg)](https://gratipay.com/~hsk81/)
 
 [GIT]: https://www.git-scm.com/
 [NPM]: https://www.npmjs.com/
