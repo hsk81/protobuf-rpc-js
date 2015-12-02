@@ -2,6 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/protobuf-rpc)
 [![Travis](https://img.shields.io/travis/rust-lang/rust.svg)](https://travis-ci.org/hsk81/protobuf-rpc-js)
+[![Codacy](https://img.shields.io/codacy/fd69f5a521ae4448bf41f101a2b34903.svg)](https://www.codacy.com/app/hasan-karahan/protobuf-rpc-js)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/hsk81/protobuf-rpc-js)
 
 [GIT]: https://www.git-scm.com/
