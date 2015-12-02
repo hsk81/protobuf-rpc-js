@@ -1,7 +1,7 @@
 # ProtoBuf.Rpc.js: Lightweight RPC for JavaScript using Protocol Buffers
 
 [![NPM version][npm-img]][npm-url]
-[![Build Status][travis-image]][travis-url]
+[![Build Status][travis-img]][travis-url]
 [![Join the chat at https://gitter.im/hsk81/protobuf-rpc-js][gitter-url]
 
 [npm-url]: https://www.npmjs.com/package/gulp
