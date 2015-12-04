@@ -93,7 +93,6 @@ void RpcServer::onTcpMessage() {
 
 void RpcServer::onTcpTask(QByteArray bytes, void *client) {
     Q_ASSERT(bytes.length() > 0);
-
     QTcpSocket *socket = (QTcpSocket*)client;
     Q_ASSERT(socket != NULL);
     QByteArray http = RpcHttp::PutHeaders(bytes);
@@ -154,6 +153,7 @@ void RpcServer::onWsMessage(QByteArray bytes) {
 }
 
 void RpcServer::onWsTask(QByteArray bytes, void *client) {
+    Q_ASSERT(bytes.length() > 0);
     QWebSocket *socket = (QWebSocket*)client;
     Q_ASSERT(socket != NULL);
     qint64 sent = socket->sendBinaryMessage(bytes);
