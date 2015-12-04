@@ -25,7 +25,7 @@ private Q_SLOTS:
     void onTcpConnection();
     void onTcpMessage();
     void onTcpDisconnect();
-    void onTcpTask(QByteArray, void* cient = 0);
+    void onTcpTask(QByteArray, void*);
 private:
     QTcpServer *m_server_tcp;
     QList<QTcpSocket*> m_client_tcp;
