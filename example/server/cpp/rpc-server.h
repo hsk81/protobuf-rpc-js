@@ -1,10 +1,10 @@
 #ifndef RPC_SERVER_H
 #define RPC_SERVER_H
 
-#include <QObject>
-#include <QByteArray>
-#include <QList>
-#include <QString>
+#include <QtCore/QByteArray>
+#include <QtCore/QList>
+#include <QtCore/QObject>
+#include <QtCore/QString>
 
 QT_FORWARD_DECLARE_CLASS(QTcpServer)
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
@@ -25,7 +25,7 @@ private Q_SLOTS:
     void onTcpConnection();
     void onTcpMessage();
     void onTcpDisconnect();
-    void onTcpTask(QByteArray, void*);
+    void onTcpTask(QByteArray, void* cient = 0);
 private:
     QTcpServer *m_server_tcp;
     QList<QTcpSocket*> m_client_tcp;

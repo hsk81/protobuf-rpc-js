@@ -1,10 +1,10 @@
 #ifndef RPC_TASK_H
 #define RPC_TASK_H
 
-#include <QObject>
-#include <QRunnable>
-#include <QByteArray>
-#include <QException>
+#include <QtCore/QByteArray>
+#include <QtCore/QException>
+#include <QtCore/QObject>
+#include <QtCore/QRunnable>
 
 #include "protocol/rpc.pb.h"
 #include "protocol/api.pb.h"
@@ -13,10 +13,10 @@ class RpcTask : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    explicit RpcTask(QByteArray bytes, void *socket, QObject *parent = 0);
+    explicit RpcTask(QByteArray bytes, void *socket = NULL, QObject *parent = 0);
 
 signals:
-    void result(QByteArray bytes, void *socket);
+    void result(QByteArray bytes, void *socket = NULL);
 
 protected:
     void run();

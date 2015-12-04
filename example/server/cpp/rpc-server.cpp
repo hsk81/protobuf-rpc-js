@@ -1,13 +1,12 @@
 #include "rpc-server.h"
 #include "rpc-task.h"
+#include "rpc-http.h"
 
-#include <QDebug>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QThreadPool>
+#include <QtCore/QDebug>
+#include <QtCore/QThreadPool>
+#include <QtNetwork/QTcpServer>
+#include <QtNetwork/QTcpSocket>
 #include <QtWebSockets/QtWebSockets>
-
-QT_USE_NAMESPACE
 
 RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent)
     : QObject(parent), m_logging(false)
@@ -31,9 +30,6 @@ RpcServer::RpcServer(quint16 port_tcp, quint16 port_ws, QObject *parent)
                 m_server_ws, &QWebSocketServer::newConnection, this, &RpcServer::onWsConnection);
     QObject::connect(
                 m_server_ws, &QWebSocketServer::closed, this, &RpcServer::closed);
-
-    m_server_tcp->setMaxPendingConnections(32);
-    QThreadPool::globalInstance()->setMaxThreadCount(32);
 }
 
 RpcServer::~RpcServer() {
@@ -85,7 +81,7 @@ void RpcServer::onTcpMessage() {
         qDebug() << "[on:message]" << bytes;
     }
 
-    RpcTask *rpc_task = new RpcTask(GetHttpBody(bytes), socket);
+    RpcTask *rpc_task = new RpcTask(RpcHttp::GetBody(bytes), socket);
     rpc_task->setAutoDelete(true);
 
     QObject::connect(
@@ -100,17 +96,19 @@ void RpcServer::onTcpTask(QByteArray bytes, void *client) {
 
     QTcpSocket *socket = (QTcpSocket*)client;
     Q_ASSERT(socket != NULL);
-    QByteArray http = PutHttpHeaders(bytes);
+    QByteArray http = RpcHttp::PutHeaders(bytes);
     Q_ASSERT(http.length() > bytes.length());
     qint64 written = socket->write(http, http.length());
     Q_ASSERT(written == http.length());
 
-    //bool flushed = socket->flush();
-    //Q_ASSERT(flushed);
-    //bool waited = socket->waitForBytesWritten(-1);
-    //Q_ASSERT(waited);
-    //qint64 to_write = socket->bytesToWrite();
-    //Q_ASSERT(to_write == 0);
+    bool flushed = socket->flush();
+    Q_ASSERT(flushed);
+    bool waited = socket->waitForBytesWritten(-1);
+    Q_ASSERT(waited == false);
+    qint64 to_write = socket->bytesToWrite();
+    Q_ASSERT(to_write == 0);
+
+    socket->close();
 }
 
 void RpcServer::onWsConnection() {
@@ -160,44 +158,4 @@ void RpcServer::onWsTask(QByteArray bytes, void *client) {
     Q_ASSERT(socket != NULL);
     qint64 sent = socket->sendBinaryMessage(bytes);
     Q_ASSERT(sent == bytes.length());
-}
-
-QByteArray RpcServer::PutHttpHeaders(QByteArray bytes) {
-    QString gmt = QLocale::c()
-            .toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss")
-            .append(" GMT");
-
-    QByteArray response = "HTTP/1.1 200 OK";
-    response.append("\r\n")
-            .append("Access-Control-Allow-Origin: ")
-            .append("*");
-    response.append("\r\n")
-            .append("Data: ")
-            .append(gmt);
-    response.append("\r\n")
-            .append("Connection: ")
-            .append("keep-alive");
-    response.append("\r\n")
-            .append("Content-Length: ")
-            .append(QString::number(bytes.length()));
-    response.append("\r\n")
-            .append("\r\n");
-
-    return response.append(bytes);
-}
-
-QByteArray RpcServer::GetHttpBody(QByteArray bytes) {
-    QList<QByteArray> lines = bytes.split('\n');
-
-    int i = 0;
-    foreach(QByteArray line, lines) {
-        if (line.length() > 0) {
-            i += line.length();
-        } else {
-            i += 2; // "\r\n"
-            break;
-        }
-    }
-
-    return bytes.mid(i + 4);
 }

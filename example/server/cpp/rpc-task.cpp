@@ -1,9 +1,9 @@
 #include "rpc-task.h"
 
-#include <QByteArray>
-#include <QDebug>
-#include <QObject>
-#include <QRunnable>
+#include <QtCore/QByteArray>
+#include <QtCore/QDebug>
+#include <QtCore/QObject>
+#include <QtCore/QRunnable>
 
 RpcTask::RpcTask(QByteArray bytes, void *socket, QObject *parent)
     : m_bytes(bytes), m_socket(socket) {
