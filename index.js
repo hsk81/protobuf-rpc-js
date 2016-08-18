@@ -258,18 +258,22 @@ var Service = mine(function (self, service_cls, opts) {
         if (self.encoding.rpc === undefined) {
             self.encoding.rpc = Encoding.Binary.rpc;
         } else {
-            if (self.encoding.rpc.encode === undefined)
+            if (self.encoding.rpc.encode === undefined) {
                 self.encoding.rpc.encode = Encoding.Binary.rpc.encode;
-            if (self.encoding.rpc.decode === undefined)
+            }
+            if (self.encoding.rpc.decode === undefined) {
                 self.encoding.rpc.decode = Encoding.Binary.rpc.decode;
+            }
         }
         if (self.encoding.msg === undefined) {
             self.encoding.msg = Encoding.Binary.msg;
         } else {
-            if (self.encoding.msg.encode === undefined)
+            if (self.encoding.msg.encode === undefined) {
                 self.encoding.msg.encode = Encoding.Binary.msg.encode;
-            if (self.encoding.msg.decode === undefined)
+            }
+            if (self.encoding.msg.decode === undefined) {
                 self.encoding.msg.decode = Encoding.Binary.msg.decode;
+            }
         }
     }
     service_cls.prototype.encoding = self.encoding;
@@ -328,7 +332,7 @@ var Service = mine(function (self, service_cls, opts) {
         };
         self.transport.send(
             self.encoding.rpc.encode(rpc_req), self.on_msg, function (err) {
-                if (err) self.on_err(err, rpc_req.id, callback);
+                if (err) { self.on_err(err, rpc_req.id, callback); }
             }
         );
     });
