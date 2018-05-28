@@ -4,17 +4,17 @@
     "url": "https://github.com/hsk81/protobuf-rpc-js/issues"
   },
   "dependencies": {
-    "protobufjs": "^4.1.3",
-    "ws": "^0.8.0",
-    "xhr2": "^0.1.3"
+    "bytebuffer": "^5.0.1",
+    "protobufjs": "^6.8.6",
+    "ws": "^5.2.0",
+    "xhr2": "^0.1.4"
   },
   "devDependencies": {
-    "argparse": "^1.0.3",
-    "ascli": "^1.0.0",
+    "argparse": "^1.0.10",
+    "ascli": "^1.0.1",
     "paperboy": "0.0.5",
     "testjs": "^1.0.4",
-    "uglify-js": "^2.6.1",
-    "v8-profiler": "^5.3.2"
+    "uglify-js": "^3.3.27"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "keywords": [
@@ -40,7 +40,7 @@
     "rpc-server.cpp": "./example/server/cpp/build/rpc-server",
     "rpc-server.js": "./example/server/js/rpc-server.js",
     "rpc-server.py": "./example/server/py/env/bin/python ./example/server/py/rpc-server.py",
-    "test": "testjs",
+    "test": "./node_modules/testjs/bin/testjs",
     "uglify": "./node_modules/uglify-js/bin/uglifyjs",
     "www-server.js": "./example/client/js-www/index.js"
   },

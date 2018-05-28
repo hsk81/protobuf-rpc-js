@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 ///////////////////////////////////////////////////////////////////////////////
 
-var ArgumentParser = require('argparse').ArgumentParser,
+let ArgumentParser = require('argparse').ArgumentParser,
     ProtoBuf = require('protobufjs'),
     ProtoBufRpc = require('../../../index.js');
 
-var assert = require('assert'),
+let assert = require('assert'),
     path = require('path');
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var parser = new ArgumentParser({
+let parser = new ArgumentParser({
     addHelp: true, description: 'RPC Client', version: '1.1.2'
 });
 parser.addArgument(['--ws-host'], {
@@ -29,10 +29,6 @@ parser.addArgument(['--xhr-host'], {
 parser.addArgument(['--xhr-port'], {
     help: 'XHR Server Port [default: 8088]', defaultValue: 8088,
     nargs: '?'
-});
-parser.addArgument(['-j', '--json'], {
-    help: 'JSON encoding [default: false]', defaultValue: false,
-    action: 'storeTrue'
 });
 parser.addArgument(['-n', '--n-ack'], {
     nargs: '?', help: 'ACK Workers', defaultValue: 1
@@ -52,38 +48,33 @@ parser.addArgument(['-d', '--n-div'], {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var args = parser.parseArgs();
+let args = parser.parseArgs();
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var ApiFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'api.proto'
-});
+let ApiFactory = ProtoBuf.loadSync(
+    path.join(__dirname, '../../protocol/api.proto'));
 assert(ApiFactory);
 
-var Api = ApiFactory.build();
+let Api = ApiFactory.resolve();
 assert(Api);
+assert(Api.Reflector);
+assert(Api.Calculator);
 
 /////////////////////////////////////////////////////////////////////)/////////
 
-var reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
+let reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     url: 'http://' + args.xhr_host + ':' + args.xhr_port,
-    transport: new ProtoBufRpc.Transport.Xhr({sync: false}),
-    encoding:  { rpc: args.json ?
-        ProtoBufRpc.Encoding.Json.rpc : ProtoBufRpc.Encoding.Binary.rpc
-    }
+    transport: new ProtoBufRpc.Transport.Xhr({sync: false})
 });
 
 assert(reflector_svc);
 assert(reflector_svc.transport);
 assert(reflector_svc.transport.socket);
 
-var calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
-    url: 'ws://' + args.ws_host + ':' + args.ws_port,
-    encoding:  { rpc: args.json ?
-        ProtoBufRpc.Encoding.Json.rpc : ProtoBufRpc.Encoding.Binary.rpc
-    }
+let calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
+    url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
 
 assert(calculator_svc);
@@ -94,117 +85,119 @@ assert(calculator_svc.transport.socket);
 /////////////////////////////////////////////////////////////////////)/////////
 
 reflector_svc.transport.socket.on('open', function () {
+    console.debug('[on:reflector-svc.open]', arguments);
 
-    var n_ack = args.n_ack, iid_ack = {};
-    for (var ack_i = 0; ack_i < n_ack; ack_i++) {
+    let n_ack = args.n_ack, iid_ack = {};
+    for (let ack_i = 0; ack_i < n_ack; ack_i++) {
         iid_ack[ack_i] = setInterval((function (i, t) {
-            var req = new Api.Reflector.AckRequest({
+            let req = {
                 timestamp: new Date().toISOString()
-            });
+            };
 
             t[i] = process.hrtime();
             reflector_svc.ack(req, function (error, res) {
                 if (error !== null) throw error;
 
                 assert(res.timestamp);
-                var dt = process.hrtime(t[i]); t[i] = process.hrtime();
+                let dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[ack]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(ack_i, {}), 0);
     }
 
     setTimeout(function () {
-        for (var key_ack in iid_ack)
+        for (let key_ack in iid_ack)
             if (iid_ack.hasOwnProperty(key_ack))
                 clearInterval(iid_ack[key_ack]);
     }, 10000);
 });
 
 calculator_svc.transport.socket.on('open', function () {
+    console.debug('[on:calculator-svc.open]', args);
 
-    var n_add = args.n_add, iid_add = {};
-    for (var add_i = 0; add_i < n_add; add_i++) {
+    let n_add = args.n_add, iid_add = {};
+    for (let add_i = 0; add_i < n_add; add_i++) {
         iid_add[add_i] = setInterval((function (i, t) {
-            var req = new Api.Calculator.AddRequest({
+            let req = {
                 lhs: random(0, 255), rhs: random(0, 255)
-            });
+            };
 
             t[i] = process.hrtime();
             calculator_svc.add(req, function (error, res) {
                 if (error !== null) throw error;
 
                 assert(req.lhs + req.rhs === res.value);
-                var dt = process.hrtime(t[i]); t[i] = process.hrtime();
+                let dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[add]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(add_i, {}), 0);
     }
 
-    var n_sub = args.n_sub, iid_sub = {};
-    for (var sub_i = 0; sub_i < n_sub; sub_i++) {
+    let n_sub = args.n_sub, iid_sub = {};
+    for (let sub_i = 0; sub_i < n_sub; sub_i++) {
         iid_sub[sub_i] = setInterval((function (i, t) {
-            var req = new Api.Calculator.SubRequest({
+            let req = {
                 lhs: random(0, 255), rhs: random(0, 255)
-            });
+            };
 
             t[i] = process.hrtime();
             calculator_svc.sub(req, function (error, res) {
                 if (error !== null) throw error;
 
                 assert(req.lhs - req.rhs === res.value);
-                var dt = process.hrtime(t[i]); t[i] = process.hrtime();
+                let dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[sub]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(sub_i, {}), 0);
     }
 
-    var n_mul = args.n_mul, iid_mul = {};
-    for (var mul_i = 0; mul_i < n_mul; mul_i++) {
+    let n_mul = args.n_mul, iid_mul = {};
+    for (let mul_i = 0; mul_i < n_mul; mul_i++) {
         iid_mul[mul_i] = setInterval((function (i, t) {
-            var req = new Api.Calculator.MulRequest({
+            let req = {
                 lhs: random(0, 255), rhs: random(0, 255)
-            });
+            };
 
             t[i] = process.hrtime();
             calculator_svc.mul(req, function (error, res) {
                 if (error !== null) throw error;
 
                 assert(req.lhs * req.rhs === res.value);
-                var dt = process.hrtime(t[i]); t[i] = process.hrtime();
+                let dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[mul]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(mul_i, {}), 0);
     }
 
-    var n_div = args.n_div, iid_div = {};
-    for (var div_i = 0; div_i < n_div; div_i++) {
+    let n_div = args.n_div, iid_div = {};
+    for (let div_i = 0; div_i < n_div; div_i++) {
         iid_div[div_i] = setInterval((function (i, t) {
-            var req = new Api.Calculator.DivRequest({
+            let req = {
                 lhs: random(0, 255), rhs: random(1, 256)
-            });
+            };
 
             t[i] = process.hrtime();
             calculator_svc.div(req, function (error, res) {
                 if (error !== null) throw error;
 
                 assert(Math.floor(req.lhs / req.rhs) === res.value);
-                var dt = process.hrtime(t[i]); t[i] = process.hrtime();
+                let dt = process.hrtime(t[i]); t[i] = process.hrtime();
                 console.log('dT[div]@%d:', i, dt[0] * 1E3 + dt[1] / 1E6);
             });
         }).with(div_i, {}), 0);
     }
 
     setTimeout(function () {
-        for (var key_add in iid_add)
+        for (let key_add in iid_add)
             if (iid_add.hasOwnProperty(key_add))
                 clearInterval(iid_add[key_add]);
-        for (var key_sub in iid_sub)
+        for (let key_sub in iid_sub)
             if (iid_sub.hasOwnProperty(key_sub))
                 clearInterval(iid_sub[key_sub]);
-        for (var key_mul in iid_mul)
+        for (let key_mul in iid_mul)
             if (iid_mul.hasOwnProperty(key_mul))
                 clearInterval(iid_mul[key_mul]);
-        for (var key_div in iid_div)
+        for (let key_div in iid_div)
             if (iid_div.hasOwnProperty(key_div))
                 clearInterval(iid_div[key_div]);
     }, 10000);
@@ -220,7 +213,7 @@ setTimeout(function () {
 ///////////////////////////////////////////////////////////////////////////////
 
 Function.prototype.with = function () {
-    var slice = Array.prototype.slice,
+    let slice = Array.prototype.slice,
         args = slice.call(arguments),
         func = this;
 

@@ -27,10 +27,6 @@ parser.addArgument(['--xhr-port'], {
     help: 'XHR Server Port [default: 8089]', defaultValue: 8088,
     nargs: '?'
 });
-parser.addArgument(['-j', '--json'], {
-    help: 'JSON encoding [default: false]', defaultValue: false,
-    action: 'storeTrue'
-});
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,23 +35,21 @@ var args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var RpcFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'rpc.proto'
-});
+var RpcFactory = ProtoBuf.loadSync(
+    path.join(__dirname, '../../protocol/rpc.proto'));
 assert.ok(RpcFactory);
-
-var Rpc = RpcFactory.build('Rpc');
+var Rpc = RpcFactory.lookup('Rpc');
 assert.ok(Rpc);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var ApiFactory = ProtoBuf.loadProtoFile({
-    root: path.join(__dirname, '../../protocol'), file: 'api.proto'
-});
+var ApiFactory = ProtoBuf.loadSync(
+    path.join(__dirname, '../../protocol/api.proto'));
 assert.ok(ApiFactory);
-
-var Api = ApiFactory.build();
+var Api = ApiFactory.resolve();
 assert.ok(Api);
+assert.ok(Api.Reflector);
+assert.ok(Api.Calculator);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,35 +66,35 @@ function process(data, opts) {
     switch (rpc_req.name) {
         case '.Reflector.Service.ack':
             req = Api.Reflector.AckRequest.decode(rpc_req.data);
-            res = new Api.Reflector.AckResult({
+            res = Api.Reflector.AckResult.encode({
                 timestamp: req.timestamp
             });
             break;
 
         case '.Calculator.Service.add':
             req = Api.Calculator.AddRequest.decode(rpc_req.data);
-            res = new Api.Calculator.AddResult({
+            res = Api.Calculator.AddResult.encode({
                 value: req.lhs + req.rhs
             });
             break;
 
         case '.Calculator.Service.sub':
             req = Api.Calculator.SubRequest.decode(rpc_req.data);
-            res = new Api.Calculator.SubResult({
+            res = Api.Calculator.SubResult.encode({
                 value: req.lhs - req.rhs
             });
             break;
 
         case '.Calculator.Service.mul':
             req = Api.Calculator.MulRequest.decode(rpc_req.data);
-            res = new Api.Calculator.MulResult({
+            res = Api.Calculator.MulResult.encode({
                 value: req.lhs * req.rhs
             });
             break;
 
         case '.Calculator.Service.div':
             req = Api.Calculator.DivRequest.decode(rpc_req.data);
-            res = new Api.Calculator.DivResult({
+            res = Api.Calculator.DivResult.encode({
                 value: Math.floor(req.lhs / req.rhs)
             });
             break;
@@ -109,15 +103,11 @@ function process(data, opts) {
             throw new Error(rpc_req.name + ': not supported');
     }
 
-    rpc_res = new Rpc.Response({
-        id: rpc_req.id, data: res.toBuffer()
+    rpc_res = Rpc.Response.encode({
+        id: rpc_req.id, data: res.finish()
     });
 
-    if (args.json) {
-        return rpc_res.encodeJSON();
-    } else {
-        return rpc_res.toBuffer();
-    }
+    return rpc_res.finish();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,11 +121,7 @@ wss.on('connection', function (ws) {
     ws.on('message', function (data, flags) {
 
         if (args.logging) {
-            if (args.json) {
-                console.log('[on:message]', data.toString());
-            } else {
-                console.log('[on:message]', data);
-            }
+            console.log('[on:message]', data);
         }
 
         ws.send(process(data));
@@ -156,11 +142,7 @@ var http = Http.createServer(function (req, res) {
         var buffer = Buffer.concat(buffers);
 
         if (args.logging) {
-            if (args.json) {
-                console.log('[on:message]', buffer.toString());
-            } else {
-                console.log('[on:message]', buffer);
-            }
+            console.log('[on:message]', buffer);
         }
 
         res.end(process(buffer).toString('binary'));

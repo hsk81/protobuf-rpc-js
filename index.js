@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Hasan Karahan <hasan.karahan@blackhan.com>
+ Copyright 2018 Hasan Karahan <hasan.karahan@blackhan.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -15,24 +15,19 @@
  */
 
 /**
- * @license protobuf-rpc.js (c) 2015 Hasan Karahan <hasan.karahan@blackhan.com>
+ * @license protobuf-rpc.js (c) 2018 Hasan Karahan <hasan.karahan@blackhan.com>
  * Released under the Apache License, Version 2.0
  * see: https://github.com/hsk81/protobuf-rpc-js for details
  */
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-var ProtoBuf = require('protobufjs'),
+let ByteBuffer = require('bytebuffer')
+    ProtoBuf = require('protobufjs'),
     WebSocket = require('ws'),
     XMLHttpRequest = require('xhr2').XMLHttpRequest,
     EventEmitter = require('events').EventEmitter;
 
-var assert = require('assert'),
+let assert = require('assert'),
     crypto = require('crypto');
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 
 function mine(fn) {
     return function () {
@@ -42,43 +37,19 @@ function mine(fn) {
     };
 }
 
-function map_to(service_cls) {
-    var map = {};
-
-    var t_cls_fqn = service_cls.$type.fqn();
-    assert(t_cls_fqn);
-    var t_cls = service_cls.$type.builder.lookup(t_cls_fqn);
-    assert(t_cls);
-    var t_rpc_methods = t_cls.getChildren(ProtoBuf.Reflect.Service.RPCMethod);
-    assert(t_rpc_methods);
-
-    t_rpc_methods.forEach(function (t_rpc_method) {
-        var key = t_cls_fqn + '.' + t_rpc_method.name;
-        assert(key);
-        map[key] = t_rpc_method.resolvedResponseType.clazz;
-        assert(map[key]);
-    });
-
-    return map;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-var Transport = {
+let Transport = {
     Ws: function (opts) {
         this.open = function (url) {
             this.socket = new WebSocket(url);
-            this.socket.binaryType = opts && opts.binaryType||'arraybuffer';
         };
-        this.send = function (buffer, msg_callback, err_callback) {
+        this.send = function (buf, msg_cb, err_cb) {
             this.socket.onmessage = function (ev) {
-                msg_callback(ev.data);
+                msg_cb(ev.data);
             };
             this.socket.onerror = function (err) {
-                err_callback(err);
+                err_cb(err);
             };
-            this.socket.send(buffer);
+            this.socket.send(buf);
         };
     },
     Xhr: function (opts) {
@@ -87,127 +58,28 @@ var Transport = {
             self.socket = new EventEmitter();
             self.url = url;
         });
-        this.send = function (buffer, msg_callback, err_callback) {
-            var xhr = new XMLHttpRequest();
+        this.send = function (buf, msg_cb, err_cb) {
+            let xhr = new XMLHttpRequest();
             xhr.open('POST', this.url, !opts||!opts.sync);
             xhr.onreadystatechange = function () {
                 if (this.readyState !== this.DONE) {
                     return;
                 }
                 if (this.status === 200) {
-                    var bb = ProtoBuf.ByteBuffer.fromBinary(
+                    msg_cb(ByteBuffer.fromBinary(
                         this.responseText
-                    );
-                    msg_callback(bb.toBuffer());
+                    ).toBuffer());
                 } else {
-                    err_callback(this.statusText);
+                    err_cb(this.statusText);
                 }
             };
-            xhr.send(buffer);
+            xhr.send(buf);
         };
     }
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
-var Encoding = {
-    Binary: {
-        rpc: {
-            encode: function (msg) {
-                return msg.toBuffer();
-            },
-            decode: function (cls, buf) {
-                return cls.decode(buf);
-            }
-        },
-        msg: {
-            encode: function (msg) {
-                return msg.toBuffer();
-            },
-            decode: function (cls, buf) {
-                return cls.decode(buf);
-            }
-        }
-    },
-    Json: {
-        rpc: {
-            encode: function (msg) {
-                return msg.encodeJSON();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeJSON(buf);
-            }
-        },
-        msg: {
-            encode: function (msg) {
-                return msg.encodeJSON();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeJSON(buf);
-            }
-        }
-    },
-    Base64: {
-        rpc: {
-            encode: function (msg) {
-                return msg.encode64();
-            },
-            decode: function (cls, buf) {
-                return cls.decode64(buf);
-            }
-        },
-        msg: {
-            encode: function (msg) {
-                return msg.encode64();
-            },
-            decode: function (cls, buf) {
-                return cls.decode64(buf);
-            }
-        }
-    },
-    Hex: {
-        rpc: {
-            encode: function (msg) {
-                return msg.encodeHex();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeHex(buf);
-            }
-        },
-        msg: {
-            encode: function (msg) {
-                return msg.encodeHex();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeHex(buf);
-            }
-        }
-    },
-    Delimited: {
-        rpc: {
-            encode: function (msg) {
-                return msg.encodeDelimited();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeDelimited(buf);
-            }
-        },
-        msg: {
-            encode: function (msg) {
-                return msg.encodeDelimited();
-            },
-            decode: function (cls, buf) {
-                return cls.decodeDelimited(buf);
-            }
-        }
-    }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-var Service = mine(function (self, service_cls, opts) {
-    assert(service_cls, 'Service class required');
+let Service = mine(function (self, service_cls, opts) {
+    assert(service_cls, 'service class required');
 
     if (opts === undefined) {
         opts = {};
@@ -219,86 +91,67 @@ var Service = mine(function (self, service_cls, opts) {
     } else {
         self.url = opts.url;
     }
-    service_cls.prototype.url = self.url;
-    assert(service_cls.prototype.url);
 
     assert(self.transport === undefined);
     if (opts.transport === undefined) {
-        self.transport = new function () {
-            this.open = function (url) {
-                this.socket = new WebSocket(url);
-            };
-            this.send = function (buffer, msg_callback, err_callback) {
-                this.socket.onmessage = function (ev) {
-                    msg_callback(ev.data);
-                };
-                this.socket.onerror = function (err) {
-                    err_callback(err);
-                };
-                this.socket.send(buffer);
-            };
-        }();
+        self.transport = new Transport.Ws;
         self.transport.open(self.url);
     } else {
-        self.transport = typeof opts.transport === 'function' ?
-            new opts.transport() : opts.transport;
+        self.transport = typeof opts.transport === 'function' 
+            ? new opts.transport() : opts.transport;
         assert(self.transport.open, 'transport.open required');
         self.transport.open(self.url);
         assert(self.transport.send, 'transport.send required');
     }
-    service_cls.prototype.transport = self.transport;
-    assert(service_cls.prototype.transport);
 
-    assert(self.encoding === undefined);
-    if (opts.encoding === undefined) {
-        self.encoding = Encoding.Binary;
-    } else {
-        self.encoding = typeof opts.encoding === 'function' ?
-            new opts.encoding() : opts.encoding;
-        if (self.encoding.rpc === undefined) {
-            self.encoding.rpc = Encoding.Binary.rpc;
+    assert(self.response_cls === undefined);
+    if (opts.response_cls === undefined) {
+        self.response_cls = {};
+        service_cls.methodsArray.forEach(function (m) {
+            if (m.resolved !== true) {
+                m.resolve();
+            }
+            self.response_cls[m.fullName] = m.resolvedResponseType;
+            assert(self.response_cls[m.fullName]);
+        });
         } else {
-            if (self.encoding.rpc.encode === undefined) {
-                self.encoding.rpc.encode = Encoding.Binary.rpc.encode;
-            }
-            if (self.encoding.rpc.decode === undefined) {
-                self.encoding.rpc.decode = Encoding.Binary.rpc.decode;
-            }
-        }
-        if (self.encoding.msg === undefined) {
-            self.encoding.msg = Encoding.Binary.msg;
-        } else {
-            if (self.encoding.msg.encode === undefined) {
-                self.encoding.msg.encode = Encoding.Binary.msg.encode;
-            }
-            if (self.encoding.msg.decode === undefined) {
-                self.encoding.msg.decode = Encoding.Binary.msg.decode;
-            }
-        }
-    }
-    service_cls.prototype.encoding = self.encoding;
-    assert(service_cls.prototype.encoding);
-
-    assert(self.return_cls === undefined);
-    if (opts.return_cls === undefined) {
-        self.return_cls = map_to(service_cls)
-    } else {
-        self.return_cls = opts.return_cls;
+        self.response_cls = opts.response_cls;
     }
 
     assert(self.rpc_message === undefined);
     if (opts.rpc_message === undefined) {
-        var rpc_factory = ProtoBuf.loadProto(
-            'syntax = "proto3"; message Rpc {' +
-                'message Request {' +
-                    'string name=1; fixed32 id=2; bytes data=3;' +
-                '}' +
-                'message Response {' +
-                    'fixed32 id=2; bytes data=3;' +
-                '}' +
-            '}'
-        );
-        self.rpc_message = rpc_factory.build('Rpc');
+        let rpc_factory = ProtoBuf.Root.fromJSON({
+            nested: {
+                "Rpc": {
+                    nested: {
+                        "Request": {
+                            fields: {
+                                "name": {
+                                    id: 1, type: "string"
+                                },
+                                "id": {
+                                    id: 2, type: "fixed32"
+                                },
+                                "data": {
+                                    id: 3, type: "bytes"
+                                }
+                            }
+                        },
+                        "Response": {
+                            fields: {
+                                "id": {
+                                    id: 2, type: "fixed32"
+                                },
+                                "data": {
+                                    id: 3, type: "bytes"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        self.rpc_message = rpc_factory.lookup('Rpc');
     } else {
         self.rpc_message = opts.rpc_message;
     }
@@ -308,7 +161,7 @@ var Service = mine(function (self, service_cls, opts) {
 
     assert(self.on_msg === undefined);
     self.on_msg = function (buf) {
-        var rpc_res = self.encoding.rpc.decode(self.rpc_message.Response, buf);
+        let rpc_res = self.rpc_message.Response.decode(buf);
         if (self.do_msg[rpc_res.id]) {
             self.do_msg[rpc_res.id](rpc_res.data);
             delete self.do_msg[rpc_res.id];
@@ -316,36 +169,39 @@ var Service = mine(function (self, service_cls, opts) {
     };
 
     assert(self.on_err === undefined);
-    self.on_err = function (err, id, callback) {
+    self.on_err = function (err, id, cb) {
         delete self.do_msg[id];
-        callback(err, null);
+        cb(err, null);
     };
 
-    return new service_cls(function (method, req, callback) {
-        var rpc_req = new self.rpc_message.Request({
-            id: crypto.randomBytes(4).readUInt32LE(),
-            data: self.encoding.msg.encode(req),
-            name: method
+    let service = service_cls.create(function (method, req, cb) {
+        let random_id = crypto.randomBytes(4).readUInt32LE();
+        assert(random_id >= 0);
+
+        let rpc_req = self.rpc_message.Request.encode({
+            name: method.fullName, id: random_id, data: req
         });
-        self.do_msg[rpc_req.id] = function (buf) {
-            callback(null, self.encoding.msg.decode(self.return_cls[method], buf));
+        self.do_msg[random_id] = function (buf) {
+            cb(null, self.response_cls[method.fullName].decode(buf));
         };
         self.transport.send(
-            self.encoding.rpc.encode(rpc_req), self.on_msg, function (err) {
-                if (err) { self.on_err(err, rpc_req.id, callback); }
+            rpc_req.finish(), self.on_msg, function (err) {
+                if (err) self.on_err(err, random_id, cb);
             }
         );
     });
-});
 
-///////////////////////////////////////////////////////////////////////////////
+    service.transport = self.transport;
+    assert(service.transport);
+    service.url = self.url;
+    assert(service.url);
+
+    return service;
+});
 
 module.exports = function (url, service_cls, opts) {
     return new Service(url, service_cls, opts);
 };
 
-module.exports.Encoding = Encoding;
 module.exports.Transport = Transport;
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
