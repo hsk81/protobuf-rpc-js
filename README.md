@@ -44,25 +44,24 @@ This is the content of the `reflector.proto` file: Here the RPC service has been
 The `ack` method allows to measure the round trip time (RTT) from the client to the server. In NodeJS an invocation would for example look like:
 
 ```js
-var ProtoBuf = require('protobufjs');
+let ProtoBuf = require('protobufjs');
 ProtoBuf.Rpc = require('protobufjs-rpc');
 
-var ReflectorFactory = ProtoBuf.loadProtoFile('uri/for/reflector.proto'),
-    Reflector = ReflectorFactory.build('Reflector');
+let ReflectorFactory = ProtoBuf.loadSync('uri/for/reflector.proto'),
+    Reflector = ReflectorFactory.lookup('Reflector');
 
-var reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
+let reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
     url: 'http://localhost:8089'
 });
 
 reflector_svc.transport.socket.on('open', function () {
-    var req = new Api.Reflector.AckRequest({
+    let req = {
         timestamp: new Date().toISOString()
-    });
-
+    };
     reflector_svc.ack(req, function (error, res) {
         if (error !== null) throw error;
         assert(res.timestamp);
-        var ms = new Date() - new Date(res.timestamp);
+        let ms = new Date() - new Date(res.timestamp);
         assert(ms > 0);
     });
 });
@@ -224,7 +223,9 @@ TRANSPORT.onmessage = function (data) {
     switch (rpc_req.name) {
         case '.Reflector.Service.ack':
             req = Api.Reflector.AckRequest.decode(rpc_req.data);
-            res = new Api.Reflector.AckResult({timestamp: req.timestamp});
+            res = Api.Reflector.AckResult.encode({
+                timestamp: req.timestamp
+            });
             break;
      // case '.Calculator.Service.add':
      //     res = process_add(req);
@@ -233,8 +234,8 @@ TRANSPORT.onmessage = function (data) {
             throw(new Error(rpc_req.name + ': not supported'));
     }
 
-    rpc_rsp = new Rpc.Response({id: rpc_req.id, data: res.toBuffer()});
-    TRANSPORT.send(rpc_rsp.toBuffer());
+    rpc_res = Rpc.Response.encode({id: rpc_req.id, data: res.finish()});
+    TRANSPORT.send(rpc_res.finish());
 };
 ```
 
