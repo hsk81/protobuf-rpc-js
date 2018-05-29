@@ -44,5 +44,5 @@
     "uglify": "./node_modules/uglify-js/bin/uglifyjs",
     "www-server.js": "./example/client/js-www/index.js"
   },
-  "version": "2.1.0"
+  "version": "2.1.1"
 }
