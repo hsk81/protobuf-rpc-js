@@ -18,9 +18,9 @@ function mine(fn) {
 
 let Transport = {
     Ws: function (opts) {
-        this.open = function (url) {
+        this.open = mine(function (self, url) {
             this.socket = new WebSocket(url);
-        };
+        });
         this.send = function (buf, msg_cb, err_cb) {
             this.socket.onmessage = function (ev) {
                 msg_cb(ev.data);
@@ -93,7 +93,7 @@ let Service = mine(function (self, service_cls, opts) {
             self.response_cls[m.fullName] = m.resolvedResponseType;
             assert(self.response_cls[m.fullName]);
         });
-        } else {
+    } else {
         self.response_cls = opts.response_cls;
     }
 
@@ -153,22 +153,29 @@ let Service = mine(function (self, service_cls, opts) {
         cb(err, null);
     };
 
-    let service = service_cls.create(function (method, req, cb) {
-        let random_id = crypto.randomBytes(4).readUInt32LE();
-        assert(random_id >= 0);
-
-        let rpc_req = self.rpc_message.Request.encode({
-            name: method.fullName, id: random_id, data: req
-        });
-        self.do_msg[random_id] = function (buf) {
-            cb(null, self.response_cls[method.fullName].decode(buf));
-        };
-        self.transport.send(
-            rpc_req.finish(), self.on_msg, function (err) {
-                if (err) self.on_err(err, random_id, cb);
+    let service = service_cls.create(function (ended) {
+        return function (method, req, cb) {
+            if (ended || !req) {
+                ended = true;
+                return;
             }
-        );
-    });
+
+            let random_id = crypto.randomBytes(4).readUInt32LE();
+            assert(random_id >= 0);
+
+            let rpc_req = self.rpc_message.Request.encode({
+                name: method.fullName, id: random_id, data: req
+            });
+            self.do_msg[random_id] = function (buf) {
+                cb(null, self.response_cls[method.fullName].decode(buf));
+            };
+            self.transport.send(
+                rpc_req.finish(), self.on_msg, function (err) {
+                    /*if (err)*/self.on_err(err, random_id, cb);
+                }
+            );
+        };
+    }());
 
     self.transport.socket.on('open', function () {
         service.emit('open', {url: self.url});

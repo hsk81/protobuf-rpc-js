@@ -112,10 +112,16 @@ Suite.run({
                     timestamp: new Date().toISOString()
                 };
                 reflector_svc.ack(req, function (error, res) {
-                    test.equal(error, null);
-                    test.ok(res.timestamp);
-                    test.done();
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
                 });
+            });
+            reflector_svc.on('end', function () {
+                test.done();
             });
         },
 
@@ -132,10 +138,16 @@ Suite.run({
                     timestamp: new Date().toISOString()
                 };
                 reflector_svc.ack(req, function (error, res) {
-                    test.equal(error, null);
-                    test.ok(res.timestamp);
-                    test.done();
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
                 });
+            });
+            reflector_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -152,10 +164,16 @@ Suite.run({
                     timestamp: new Date().toISOString()
                 };
                 reflector_svc.ack(req, function (error, res) {
-                    test.equal(error, null);
-                    test.ok(res.timestamp);
-                    test.done();
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
                 });
+            });
+            reflector_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -207,10 +225,16 @@ Suite.run({
                     timestamp: new Date().toISOString()
                 };
                 reflector_svc.ack(req, function (error, res) {
-                    test.equal(error, null);
-                    test.ok(res.timestamp);
-                    test.done();
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
                 });
+            });
+            reflector_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -228,10 +252,16 @@ Suite.run({
                     timestamp: new Date().toISOString()
                 };
                 reflector_svc.ack(req, function (error, res) {
-                    test.equal(error, null);
-                    test.ok(res.timestamp);
-                    test.done();
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
                 });
+            });
+            reflector_svc.on('end', function () { 
+                test.done();
             });
         }
     },
@@ -273,10 +303,16 @@ Suite.run({
                     lhs: 2, rhs: 3
                 };
                 calculator_svc.add(req, function (error, res) {
-                    test.equal(error, null);
-                    test.equal(res.value, 5);
-                    test.done();
+                    if (!error) {
+                        test.equal(res.value, 5);
+                    } else {
+                        test.fail(error);
+                    }
+                    calculator_svc.end();
                 });
+            });
+            calculator_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -293,10 +329,16 @@ Suite.run({
                     lhs: 2, rhs: 3
                 };
                 calculator_svc.sub(req, function (error, res) {
-                    test.equal(error, null);
-                    test.equal(res.value, -1);
-                    test.done();
+                    if (!error) {
+                        test.equal(res.value, -1);
+                    } else {
+                        test.fail(error);
+                    }
+                    calculator_svc.end();
                 });
+            });
+            calculator_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -313,10 +355,16 @@ Suite.run({
                     lhs: 2, rhs: 3
                 };
                 calculator_svc.mul(req, function (error, res) {
-                    test.equal(error, null);
-                    test.equal(res.value, 6);
-                    test.done();
+                    if (!error) {
+                        test.equal(res.value, 6);
+                    } else {
+                        test.fail(error);
+                    }
+                    calculator_svc.end();
                 });
+            });
+            calculator_svc.on('end', function () { 
+                test.done();
             });
         },
 
@@ -333,10 +381,16 @@ Suite.run({
                     lhs: 3, rhs: 2
                 };
                 calculator_svc.div(req, function (error, res) {
-                    test.equal(error, null);
-                    test.equal(res.value, 1);
-                    test.done();
+                    if (!error) {
+                        test.equal(res.value, 1);
+                    } else {
+                        test.fail(error);
+                    }
+                    calculator_svc.end();
                 });
+            });
+            calculator_svc.on('end', function () { 
+                test.done();
             });
         }
     }

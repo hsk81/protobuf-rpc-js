@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 ///////////////////////////////////////////////////////////////////////////////
 
-var ArgumentParser = require('argparse').ArgumentParser,
+let ArgumentParser = require('argparse').ArgumentParser,
     ProtoBuf = require('protobufjs'),
     WebSocket = require('ws'),
     Http = require('http');
 
-var assert = require('assert'),
+let assert = require('assert'),
     path = require('path');
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Server', version: '2.1.1'
+let parser = new ArgumentParser({
+    addHelp: true, description: 'RPC Server', version: '2.1.0'
 });
 parser.addArgument(['-l', '--logging'], {
     help: 'Logging [default: false]', defaultValue: false,
@@ -30,23 +30,23 @@ parser.addArgument(['--xhr-port'], {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var args = parser.parseArgs();
+let args = parser.parseArgs();
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var RpcFactory = ProtoBuf.loadSync(
+let RpcFactory = ProtoBuf.loadSync(
     path.join(__dirname, '../../protocol/rpc.proto'));
 assert.ok(RpcFactory);
-var Rpc = RpcFactory.lookup('Rpc');
+let Rpc = RpcFactory.lookup('Rpc');
 assert.ok(Rpc);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var ApiFactory = ProtoBuf.loadSync(
+let ApiFactory = ProtoBuf.loadSync(
     path.join(__dirname, '../../protocol/api.proto'));
 assert.ok(ApiFactory);
-var Api = ApiFactory.resolve();
+let Api = ApiFactory.resolve();
 assert.ok(Api);
 assert.ok(Api.Reflector);
 assert.ok(Api.Calculator);
@@ -55,7 +55,7 @@ assert.ok(Api.Calculator);
 ///////////////////////////////////////////////////////////////////////////////
 
 function process(data, opts) {
-    var rpc_req = Rpc.Request.decode(data), 
+    let rpc_req = Rpc.Request.decode(data), 
         req, rpc_res, res;
 
     switch (rpc_req.name) {
@@ -108,7 +108,7 @@ function process(data, opts) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var wss = new WebSocket.Server({
+let wss = new WebSocket.Server({
     port: args.ws_port
 });
 
@@ -125,16 +125,16 @@ wss.on('connection', function (ws) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-var http = Http.createServer(function (req, res) {
+let http = Http.createServer(function (req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    var buffers = [];
+    let buffers = [];
     req.on('data', function (data) {
         buffers.push(data)
     });
 
     req.on('end', function () {
-        var buffer = Buffer.concat(buffers);
+        let buffer = Buffer.concat(buffers);
 
         if (args.logging) {
             console.log('[on:message]', buffer);
