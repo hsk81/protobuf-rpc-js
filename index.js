@@ -137,20 +137,22 @@ let Service = mine(function (self, service_cls, opts) {
 
     assert(self.do_msg === undefined);
     self.do_msg = {};
+    assert(self.do_err === undefined);
+    self.do_err = {};
 
     assert(self.on_msg === undefined);
     self.on_msg = function (buf) {
         let rpc_res = self.rpc_message.Response.decode(buf);
         if (self.do_msg[rpc_res.id]) {
             self.do_msg[rpc_res.id](rpc_res.data);
-            delete self.do_msg[rpc_res.id];
         }
     };
 
     assert(self.on_err === undefined);
-    self.on_err = function (err, id, cb) {
-        delete self.do_msg[id];
-        cb(err, null);
+    self.on_err = function (err, random_id) {
+        if (self.do_err[random_id]) {
+            self.do_err[random_id](err);
+        }
     };
 
     let service = service_cls.create(function (ended) {
@@ -167,11 +169,20 @@ let Service = mine(function (self, service_cls, opts) {
                 name: method.fullName, id: random_id, data: req
             });
             self.do_msg[random_id] = function (buf) {
+                if (method.responseStream !== true) {
+                    delete self.do_msg[random_id];
+                }
                 cb(null, self.response_cls[method.fullName].decode(buf));
+            };
+            self.do_err[random_id] = function (err) {
+                if (method.responseStream !== true) {
+                    delete self.do_err[random_id];
+                }
+                cb(err, null);
             };
             self.transport.send(
                 rpc_req.finish(), self.on_msg, function (err) {
-                    /*if (err)*/self.on_err(err, random_id, cb);
+                    self.on_err(err, random_id);
                 }
             );
         };

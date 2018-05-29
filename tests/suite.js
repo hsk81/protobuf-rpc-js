@@ -117,8 +117,8 @@ Suite.run({
                     } else {
                         test.fail(error);
                     }
-                    reflector_svc.end();
                 });
+                reflector_svc.end();
             });
             reflector_svc.on('end', function () {
                 test.done();
@@ -393,7 +393,58 @@ Suite.run({
                 test.done();
             });
         }
-    }
+    },
+
+    'Api.Listener': {
+        'package': function (test) {
+            let ListenerFactory =
+                ProtoBuf.loadSync('example/protocol/listener.proto');
+            test.ok(ListenerFactory);
+
+            let Listener = ListenerFactory.lookup('Listener');
+            test.ok(Listener);
+            test.ok(Listener.SubRequest);
+            test.ok(Listener.SubResult);
+            test.ok(Listener.Service);
+            test.ok(Listener.Service.methods.sub);
+            test.done();
+        },
+
+        'sub': function (test) {
+            let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
+                Api = ApiFactory.resolve();
+
+            let listener_svc = new ProtoBuf.Rpc(Api.Listener.Service, {
+                url: 'ws://localhost:18089'
+            });
+            listener_svc.on('open', function () {
+                let req = {
+                    timestamp: new Date().toISOString()
+                };
+                listener_svc.sub(req, function (error, res) {
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                });
+            });
+            listener_svc.on('data', function (res, method) {
+                test.ok(res);
+            });
+            listener_svc.on('data', function (res, method) {
+                test.ok(method);
+            });
+            listener_svc.on('end', function () {
+                listener_svc.off('data');
+                test.done();
+            });
+
+            setTimeout(function () {
+                listener_svc.end();
+            }, 100);
+        }
+    },
 });
 
 ///////////////////////////////////////////////////////////////////////////////

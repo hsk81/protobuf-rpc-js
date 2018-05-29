@@ -46,17 +46,26 @@ assert.ok(Rpc);
 let ApiFactory = ProtoBuf.loadSync(
     path.join(__dirname, '../../protocol/api.proto'));
 assert.ok(ApiFactory);
+
 let Api = ApiFactory.resolve();
 assert.ok(Api);
+assert.ok(Api.Listener);
 assert.ok(Api.Reflector);
 assert.ok(Api.Calculator);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-function process(data, opts) {
-    let rpc_req = Rpc.Request.decode(data), 
-        req, rpc_res, res;
+function subscriber(rpc_req) {
+    switch (rpc_req.name) {
+        case '.Listener.Service.sub':
+            return true;
+        default:
+            return false;
+    }
+}
+
+function processor(rpc_req, opts) {
 
     switch (rpc_req.name) {
         case '.Reflector.Service.ack':
@@ -94,15 +103,18 @@ function process(data, opts) {
             });
             break;
 
+        case '.Listener.Service.sub':
+            req = Api.Listener.SubRequest.decode(rpc_req.data);
+            res = Api.Listener.SubResult.encode({
+                timestamp: opts && opts.timestamp || req.timestamp
+            });
+            break;
+
         default:
             throw new Error(rpc_req.name + ': not supported');
     }
 
-    rpc_res = Rpc.Response.encode({
-        id: rpc_req.id, data: res.finish()
-    });
-
-    return rpc_res.finish();
+    return res.finish();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -119,7 +131,26 @@ wss.on('connection', function (ws) {
             console.log('[on:message]', data);
         }
 
-        ws.send(process(data));
+        let rpc_req = Rpc.Request.decode(data);
+        if (subscriber(rpc_req)) {
+            let iid = setInterval(function () {
+                let rpc_res = Rpc.Response.encode({
+                    id: rpc_req.id, data: processor(rpc_req, {
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                try {
+                    ws.send(rpc_res.finish());  // Keep sending ...
+                } catch (ex) {
+                    clearInterval(iid);         // until WS closes!
+                }
+            }, 1);
+        } else {
+            let rpc_res = Rpc.Response.encode({
+                id: rpc_req.id, data: processor(rpc_req)
+            });
+            ws.send(rpc_res.finish());
+        }
     });
 });
 
@@ -134,13 +165,17 @@ let http = Http.createServer(function (req, res) {
     });
 
     req.on('end', function () {
-        let buffer = Buffer.concat(buffers);
-
+        let data = Buffer.concat(buffers);
         if (args.logging) {
-            console.log('[on:message]', buffer);
+            console.log('[on:message]', data);
         }
 
-        res.end(process(buffer).toString('binary'));
+        let rpc_req = Rpc.Request.decode(data);
+        let rpc_res = Rpc.Response.encode({
+            id: rpc_req.id, data: processor(rpc_req)
+        });
+
+        res.end(rpc_res.finish().toString('binary'));
     });
 });
 
