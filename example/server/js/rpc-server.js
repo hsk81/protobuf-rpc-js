@@ -13,7 +13,7 @@ var assert = require('assert'),
 ///////////////////////////////////////////////////////////////////////////////
 
 var parser = new ArgumentParser({
-    addHelp: true, description: 'RPC Server', version: '1.1.2'
+    addHelp: true, description: 'RPC Server', version: '2.1.1'
 });
 parser.addArgument(['-l', '--logging'], {
     help: 'Logging [default: false]', defaultValue: false,
@@ -55,13 +55,8 @@ assert.ok(Api.Calculator);
 ///////////////////////////////////////////////////////////////////////////////
 
 function process(data, opts) {
-    var rpc_req, req, rpc_res, res;
-
-    if (args.json) {
-        rpc_req = Rpc.Request.decodeJSON(data);
-    } else {
-        rpc_req = Rpc.Request.decode(data);
-    }
+    var rpc_req = Rpc.Request.decode(data), 
+        req, rpc_res, res;
 
     switch (rpc_req.name) {
         case '.Reflector.Service.ack':
