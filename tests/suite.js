@@ -35,7 +35,7 @@ Suite.run = function (tests) {
             summarize();
         });
         server.on('close', function () {
-            assert(server.killed);
+            assert(server.killed || server.exitCode === 1);
         });
         suite.run(false, function () {
             server.kill();
