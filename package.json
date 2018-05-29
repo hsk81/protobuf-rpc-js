@@ -27,7 +27,7 @@
     "protobufjs-rpc"
   ],
   "homepage": "https://github.com/hsk81/protobuf-rpc-js#readme",
-  "license": "Apache-2.0",
+  "license": "BSD-3-Clause",
   "main": "index.js",
   "name": "protobuf-rpc",
   "repository": {
