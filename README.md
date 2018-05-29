@@ -50,10 +50,10 @@ let ReflectorFactory = ProtoBuf.loadSync('uri/for/reflector.proto'),
     Reflector = ReflectorFactory.lookup('Reflector');
 
 let reflector_svc = new ProtoBuf.Rpc(Reflector.Service, {
-    url: 'http://localhost:8089'
+    url: 'ws://localhost:8088'
 });
 
-reflector_svc.transport.socket.on('open', function () {
+reflector_svc.on('open', function () {
     let req = {
         timestamp: new Date().toISOString()
     };
@@ -216,8 +216,8 @@ As already mentioned this [ProtoBuf.Rpc.js] library provides abstractions for th
 
 ```js
 TRANSPORT.onmessage = function (data) {
-    var req, rpc_req = Rpc.Request.decode(data),
-        res, rpc_rsp;
+    let req, rpc_req = Rpc.Request.decode(data),
+        res, rpc_res;
 
     switch (rpc_req.name) {
         case '.Reflector.Service.ack':
@@ -233,7 +233,10 @@ TRANSPORT.onmessage = function (data) {
             throw(new Error(rpc_req.name + ': not supported'));
     }
 
-    rpc_res = Rpc.Response.encode({id: rpc_req.id, data: res.finish()});
+    rpc_res = Rpc.Response.encode({
+        id: rpc_req.id, data: res.finish()
+    });
+
     TRANSPORT.send(rpc_res.finish());
 };
 ```

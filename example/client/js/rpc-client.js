@@ -69,23 +69,14 @@ let reflector_svc = new ProtoBufRpc(Api.Reflector.Service, {
     transport: new ProtoBufRpc.Transport.Xhr({sync: false})
 });
 
-assert(reflector_svc);
-assert(reflector_svc.transport);
-assert(reflector_svc.transport.socket);
-
 let calculator_svc = new ProtoBufRpc(Api.Calculator.Service, {
     url: 'ws://' + args.ws_host + ':' + args.ws_port
 });
 
-assert(calculator_svc);
-assert(calculator_svc.transport);
-assert(calculator_svc.transport.socket);
-
 /////////////////////////////////////////////////////////////////////)/////////
 /////////////////////////////////////////////////////////////////////)/////////
 
-reflector_svc.transport.socket.on('open', function () {
-    console.debug('[on:reflector-svc.open]', arguments);
+reflector_svc.on('open', function () {
 
     let n_ack = args.n_ack, iid_ack = {};
     for (let ack_i = 0; ack_i < n_ack; ack_i++) {
@@ -112,8 +103,7 @@ reflector_svc.transport.socket.on('open', function () {
     }, 10000);
 });
 
-calculator_svc.transport.socket.on('open', function () {
-    console.debug('[on:calculator-svc.open]', args);
+calculator_svc.on('open', function () {
 
     let n_add = args.n_add, iid_add = {};
     for (let add_i = 0; add_i < n_add; add_i++) {

@@ -100,19 +100,6 @@ Suite.run({
             test.done();
         },
 
-        'transport': function (test) {
-            let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
-                Api = ApiFactory.resolve();
-
-            let reflector_svc = new ProtoBuf.Rpc(Api.Reflector.Service, {
-                url: 'ws://localhost:18089'
-            });
-            test.ok(reflector_svc);
-            test.ok(reflector_svc.transport);
-            test.ok(reflector_svc.transport.socket);
-            test.done();
-        },
-
         'ack': function (test) {
             let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
                 Api = ApiFactory.resolve();
@@ -120,7 +107,7 @@ Suite.run({
             let reflector_svc = new ProtoBuf.Rpc(Api.Reflector.Service, {
                 url: 'ws://localhost:18089'
             });
-            reflector_svc.transport.socket.on('open', function () {
+            reflector_svc.on('open', function () {
                 let req = {
                     timestamp: new Date().toISOString()
                 };
@@ -140,7 +127,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Ws,
                 url: 'ws://localhost:18089'
             });
-            reflector_svc.transport.socket.on('open', function () {
+            reflector_svc.on('open', function () {
                 let req = {
                     timestamp: new Date().toISOString()
                 };
@@ -160,7 +147,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Xhr,
                 url: 'http://localhost:18088'
             });
-            reflector_svc.transport.socket.on('open', function () {
+            reflector_svc.on('open', function () {
                 let req = {
                     timestamp: new Date().toISOString()
                 };
@@ -215,7 +202,7 @@ Suite.run({
             let reflector_svc = new ProtoBuf.Rpc(Api.Reflector.Service, {
                 url: 'ws://localhost:18089', rpc_message: Rpc
             });
-            reflector_svc.transport.socket.on('open', function () {
+            reflector_svc.on('open', function () {
                 let req = {
                     timestamp: new Date().toISOString()
                 };
@@ -236,7 +223,7 @@ Suite.run({
                     '.Reflector.Service.ack': Api.Reflector.AckResult
                 }
             });
-            reflector_svc.transport.socket.on('open', function () {
+            reflector_svc.on('open', function () {
                 let req = {
                     timestamp: new Date().toISOString()
                 };
@@ -273,19 +260,6 @@ Suite.run({
             test.done();
         },
 
-        'transport': function (test) {
-            let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
-                Api = ApiFactory.resolve();
-
-            let calculator_svc = new ProtoBuf.Rpc(Api.Calculator.Service, {
-                url: 'ws://localhost:18089'
-            });
-            test.ok(calculator_svc);
-            test.ok(calculator_svc.transport);
-            test.ok(calculator_svc.transport.socket);
-            test.done();
-        },
-
         'add': function (test) {
             let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
                 Api = ApiFactory.resolve();
@@ -294,7 +268,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Ws,
                 url: 'ws://localhost:18089'
             });
-            calculator_svc.transport.socket.on('open', function () {
+            calculator_svc.on('open', function () {
                 let req = {
                     lhs: 2, rhs: 3
                 };
@@ -314,7 +288,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Ws,
                 url: 'ws://localhost:18089'
             });
-            calculator_svc.transport.socket.on('open', function () {
+            calculator_svc.on('open', function () {
                 let req = {
                     lhs: 2, rhs: 3
                 };
@@ -334,7 +308,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Ws,
                 url: 'ws://localhost:18089'
             });
-            calculator_svc.transport.socket.on('open', function () {
+            calculator_svc.on('open', function () {
                 let req = {
                     lhs: 2, rhs: 3
                 };
@@ -354,7 +328,7 @@ Suite.run({
                 transport: new ProtoBuf.Rpc.Transport.Ws,
                 url: 'ws://localhost:18089'
             });
-            calculator_svc.transport.socket.on('open', function () {
+            calculator_svc.on('open', function () {
                 let req = {
                     lhs: 3, rhs: 2
                 };

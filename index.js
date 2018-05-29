@@ -21,10 +21,9 @@
  */
 
 let ByteBuffer = require('bytebuffer')
-    ProtoBuf = require('protobufjs'),
-    WebSocket = require('ws'),
-    XMLHttpRequest = require('xhr2').XMLHttpRequest,
-    EventEmitter = require('events').EventEmitter;
+    ProtoBuf = require('protobufjs');
+let WebSocket = require('ws'),
+    XMLHttpRequest = require('xhr2').XMLHttpRequest;
 
 let assert = require('assert'),
     crypto = require('crypto');
@@ -55,7 +54,7 @@ let Transport = {
     Xhr: function (opts) {
         this.open = mine(function (self, url) {
             setTimeout(function () { self.socket.emit('open'); }, 0);
-            self.socket = new EventEmitter();
+            self.socket = new ProtoBuf.util.EventEmitter();
             self.url = url;
         });
         this.send = function (buf, msg_cb, err_cb) {
@@ -79,7 +78,7 @@ let Transport = {
 };
 
 let Service = mine(function (self, service_cls, opts) {
-    assert(service_cls, 'service class required');
+    assert(service_cls, 'service_cls required');
 
     if (opts === undefined) {
         opts = {};
@@ -100,8 +99,8 @@ let Service = mine(function (self, service_cls, opts) {
         self.transport = typeof opts.transport === 'function' 
             ? new opts.transport() : opts.transport;
         assert(self.transport.open, 'transport.open required');
-        self.transport.open(self.url);
         assert(self.transport.send, 'transport.send required');
+        self.transport.open(self.url);
     }
 
     assert(self.response_cls === undefined);
@@ -191,10 +190,9 @@ let Service = mine(function (self, service_cls, opts) {
         );
     });
 
-    service.transport = self.transport;
-    assert(service.transport);
-    service.url = self.url;
-    assert(service.url);
+    self.transport.socket.on('open', function () {
+        service.emit('open', {url: self.url});
+    });
 
     return service;
 });
