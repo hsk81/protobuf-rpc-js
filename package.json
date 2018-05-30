@@ -35,14 +35,12 @@
     "type": "git"
   },
   "scripts": {
-    "minify": "./node_modules/uglify-js/bin/uglifyjs --comments -o dist/protobuf-rpc.min.js --source-map=dist/protobuf-rpc.min.map dist/protobuf-rpc.js",
-    "rpc-client.js": "./example/client/js/rpc-client.js",
+    "rpc-client.js": "node ./example/client/js/rpc-client.js",
     "rpc-server.cpp": "./example/server/cpp/build/rpc-server",
-    "rpc-server.js": "./example/server/js/rpc-server.js",
-    "rpc-server.py": "./example/server/py/env/bin/python ./example/server/py/rpc-server.py",
-    "test": "./node_modules/testjs/bin/testjs",
-    "uglify": "./node_modules/uglify-js/bin/uglifyjs",
-    "www-server.js": "./example/client/js-www/index.js"
+    "rpc-server.js": "node ./example/server/js/rpc-server.js",
+    "rpc-server.py": "python ./example/server/py/rpc-server.py",
+    "www-server.js": "node ./example/client/js-www/index.js",
+    "test": "node ./node_modules/testjs/bin/testjs"
   },
   "version": "2.2.0"
 }

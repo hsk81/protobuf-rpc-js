@@ -4,8 +4,8 @@ let assert = require('assert');
 ///////////////////////////////////////////////////////////////////////////////
 
 let spawn = require('child_process').spawn;
-let server = spawn('./example/server/js/rpc-server.js', [
-    '--xhr-port=18088', '--ws-port=18089'
+let server = spawn('node', [
+    'example/server/js/rpc-server.js', '--xhr-port=18088', '--ws-port=18089'
 ]);
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ let args = parser.parseArgs();
 ///////////////////////////////////////////////////////////////////////////////
 
 let RpcFactory = ProtoBuf.loadSync(
-    path.join(__dirname, '../../protocol/rpc.proto'));
+    path.join(__dirname, '../../../protocol/rpc.proto'));
 assert.ok(RpcFactory);
 let Rpc = RpcFactory.lookup('Rpc');
 assert.ok(Rpc);
