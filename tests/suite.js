@@ -491,12 +491,10 @@ Suite.run({
                 let req = {
                     timestamp: new Date().toISOString()
                 };
-                listener_svc.sub(req, function (error, res) {
-                    if (!error) {
-                        test.ok(res.timestamp);
-                    } else {
-                        test.fail(error);
-                    }
+                listener_svc.sub(req).then((res) => {
+                    test.ok(res.timestamp);
+                }).catch((error) => {
+                    test.fail(error);
                 });
             });
             listener_svc.on('data', function (res, method) {
