@@ -41,5 +41,5 @@
     "www-server.js": "node ./example/client/js-www/index.js",
     "test": "node ./node_modules/testjs/bin/testjs"
   },
-  "version": "2.2.1"
+  "version": "2.2.2"
 }
