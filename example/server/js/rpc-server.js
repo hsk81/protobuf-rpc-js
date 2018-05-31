@@ -27,6 +27,10 @@ parser.addArgument(['--xhr-port'], {
     help: 'XHR Server Port [default: 8089]', defaultValue: 8088,
     nargs: '?'
 });
+parser.addArgument(['-d', '--delimited'], {
+    help: 'Delimited [default: false]', defaultValue: false,
+    action: 'storeTrue'
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -131,10 +135,10 @@ wss.on('connection', function (ws) {
             console.log('[on:message]', data);
         }
 
-        let rpc_req = Rpc.Request.decode(data);
+        let rpc_req = RpcDecode(data);
         if (subscriber(rpc_req)) {
             let iid = setInterval(function () {
-                let rpc_res = Rpc.Response.encode({
+                let rpc_res = RpcEncode({
                     id: rpc_req.id, data: processor(rpc_req, {
                         timestamp: new Date().toISOString()
                     })
@@ -146,7 +150,7 @@ wss.on('connection', function (ws) {
                 }
             }, 1);
         } else {
-            let rpc_res = Rpc.Response.encode({
+            let rpc_res = RpcEncode({
                 id: rpc_req.id, data: processor(rpc_req)
             });
             ws.send(rpc_res.finish());
@@ -170,8 +174,8 @@ let http = Http.createServer(function (req, res) {
             console.log('[on:message]', data);
         }
 
-        let rpc_req = Rpc.Request.decode(data);
-        let rpc_res = Rpc.Response.encode({
+        let rpc_req = RpcDecode(data);
+        let rpc_res = RpcEncode({
             id: rpc_req.id, data: processor(rpc_req)
         });
 
@@ -180,6 +184,25 @@ let http = Http.createServer(function (req, res) {
 });
 
 http.listen(args.xhr_port);
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+let RpcDecode = function (buf) {
+    if (args.delimited) {
+        return Rpc.Request.decodeDelimited(buf);
+    } else {
+        return Rpc.Request.decode(buf);
+    }
+};
+
+let RpcEncode = function (buf) {
+    if (args.delimited) {
+        return Rpc.Response.encodeDelimited(buf);
+    } else {
+        return Rpc.Response.encode(buf);
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

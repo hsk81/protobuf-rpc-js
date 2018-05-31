@@ -57,6 +57,29 @@ let Transport = {
     }
 };
 
+let Encoding = {
+    Binary: function (opts) {
+        return {
+            encode: function (obj, cls) {
+                return cls.encode(obj);
+            },
+            decode: function (buf, cls) {
+                return cls.decode(buf);
+            }
+        };
+    },
+    Delimited: function (opts) {
+        return {
+            encode: function (obj, cls) {
+                return cls.encodeDelimited(obj);
+            },
+            decode: function (buf, cls) {
+                return cls.decodeDelimited(buf);
+            }
+        };
+    }
+};
+
 let Service = mine(function (self, service_cls, opts) {
     assert(service_cls, 'service_cls required');
 
@@ -81,6 +104,16 @@ let Service = mine(function (self, service_cls, opts) {
         assert(self.transport.open, 'transport.open required');
         assert(self.transport.send, 'transport.send required');
         self.transport.open(self.url);
+    }
+
+    assert(self.encoding === undefined);
+    if (opts.encoding === undefined) {
+        self.encoding = new Encoding.Binary;
+    } else {
+        self.encoding = typeof opts.encoding === 'function'
+            ? new opts.encoding() : opts.encoding;
+        assert(self.encoding.encode, 'encoding.encode required');
+        assert(self.encoding.decode, 'encoding.decode required');
     }
 
     assert(self.response_cls === undefined);
@@ -142,7 +175,9 @@ let Service = mine(function (self, service_cls, opts) {
 
     assert(self.on_msg === undefined);
     self.on_msg = function (buf) {
-        let rpc_res = self.rpc_message.Response.decode(buf);
+        let rpc_res = self.encoding.decode(
+            buf, self.rpc_message.Response
+        );
         if (self.do_msg[rpc_res.id]) {
             self.do_msg[rpc_res.id](rpc_res.data);
         }
@@ -165,9 +200,10 @@ let Service = mine(function (self, service_cls, opts) {
             let random_id = crypto.randomBytes(4).readUInt32LE();
             assert(random_id >= 0);
 
-            let rpc_req = self.rpc_message.Request.encode({
+            let rpc_req = self.encoding.encode({
                 name: method.fullName, id: random_id, data: req
-            });
+            }, self.rpc_message.Request);
+
             self.do_msg[random_id] = function (buf) {
                 if (method.responseStream !== true) {
                     delete self.do_msg[random_id];
@@ -180,6 +216,7 @@ let Service = mine(function (self, service_cls, opts) {
                 }
                 cb(err, null);
             };
+
             self.transport.send(
                 rpc_req.finish(), self.on_msg, function (err) {
                     self.on_err(err, random_id);
@@ -199,4 +236,5 @@ module.exports = function (url, service_cls, opts) {
     return new Service(url, service_cls, opts);
 };
 
+module.exports.Encoding = Encoding;
 module.exports.Transport = Transport;

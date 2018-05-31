@@ -4,8 +4,12 @@ let assert = require('assert');
 ///////////////////////////////////////////////////////////////////////////////
 
 let spawn = require('child_process').spawn;
-let server = spawn('node', [
+let server_1 = spawn('node', [
     'example/server/js/rpc-server.js', '--xhr-port=18088', '--ws-port=18089'
+]);
+let server_2 = spawn('node', [
+    'example/server/js/rpc-server.js', '--xhr-port=28088', '--ws-port=28089',
+    '--delimited'
 ]);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,14 +35,21 @@ Suite.run = function (tests) {
             }
         };
 
-        server.on('error', function () {
+        server_1.on('error', function () {
             summarize();
         });
-        server.on('close', function () {
-            assert(server.killed || server.exitCode === 1);
+        server_1.on('close', function () {
+            assert(server_1.killed || server_1.exitCode === 1);
+        });
+        server_2.on('error', function () {
+            summarize();
+        });
+        server_2.on('close', function () {
+            assert(server_2.killed || server_2.exitCode === 1);
         });
         suite.run(false, function () {
-            server.kill();
+            server_1.kill();
+            server_2.kill();
             summarize();
         });
     }, 600);
@@ -70,6 +81,13 @@ Suite.run({
         test.ok(ProtoBuf.Rpc.Transport);
         test.ok(ProtoBuf.Rpc.Transport.Ws);
         test.ok(ProtoBuf.Rpc.Transport.Xhr);
+        test.done();
+    },
+
+    'Encoding': function (test) {
+        test.ok(ProtoBuf.Rpc.Encoding);
+        test.ok(ProtoBuf.Rpc.Encoding.Binary);
+        test.ok(ProtoBuf.Rpc.Encoding.Delimited);
         test.done();
     },
 
@@ -261,6 +279,58 @@ Suite.run({
                 });
             });
             reflector_svc.on('end', function () { 
+                test.done();
+            });
+        },
+
+        'ack-binary': function (test) {
+            let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
+                Api = ApiFactory.resolve();
+
+            let reflector_svc = new ProtoBuf.Rpc(Api.Reflector.Service, {
+                encoding: new ProtoBuf.Rpc.Encoding.Binary,
+                url: 'ws://localhost:18089'
+            });
+            reflector_svc.on('open', function () {
+                let req = {
+                    timestamp: new Date().toISOString()
+                };
+                reflector_svc.ack(req, function (error, res) {
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
+                });
+            });
+            reflector_svc.on('end', function () {
+                test.done();
+            });
+        },
+
+        'ack-delimited': function (test) {
+            let ApiFactory = ProtoBuf.loadSync('example/protocol/api.proto'),
+                Api = ApiFactory.resolve();
+
+            let reflector_svc = new ProtoBuf.Rpc(Api.Reflector.Service, {
+                encoding: new ProtoBuf.Rpc.Encoding.Delimited,
+                url: 'ws://localhost:28089' // use server #2!
+            });
+            reflector_svc.on('open', function () {
+                let req = {
+                    timestamp: new Date().toISOString()
+                };
+                reflector_svc.ack(req, function (error, res) {
+                    if (!error) {
+                        test.ok(res.timestamp);
+                    } else {
+                        test.fail(error);
+                    }
+                    reflector_svc.end();
+                });
+            });
+            reflector_svc.on('end', function () {
                 test.done();
             });
         }
