@@ -13,8 +13,7 @@
     "argparse": "^1.0.10",
     "ascli": "^1.0.1",
     "paperboy": "0.0.5",
-    "testjs": "^1.0.4",
-    "uglify-js": "^3.3.27"
+    "testjs": "^1.0.4"
   },
   "description": "Lightweight RPC using Protocol Buffers",
   "keywords": [
