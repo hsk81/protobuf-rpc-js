@@ -430,10 +430,10 @@ Suite.run({
                 });
             });
             listener_svc.on('data', function (res, method) {
-                test.ok(res);
+                test.ok(res.timestamp);
             });
             listener_svc.on('data', function (res, method) {
-                test.ok(method);
+                test.ok(method); // method.name === 'sub'
             });
             listener_svc.on('end', function () {
                 listener_svc.off('data');

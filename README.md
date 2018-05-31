@@ -7,7 +7,7 @@
 
 [GIT]: https://www.git-scm.com/
 [NPM]: https://www.npmjs.com/
-[NodeJS]: https://nodejs.org/api/
+[Node.js]: https://Node.js.org/api/
 [Python]: https://www.python.org/
 [ProtoBuf.js]: https://github.com/dcodeIO/protobuf.js
 [ProtoBuf.Rpc.js]: https://github.com/hsk81/protobuf-rpc-js
@@ -17,8 +17,12 @@
 [QT/C++]: https://www.qt.io/
 [tornado]: http://www.tornadoweb.org/en/stable/
 [V8 JavaScript Engine]: https://github.com/v8/v8
+[XMLHttpRequest]: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+[WebSockets]: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
 
-The [ProtoBuf.js] JavaScript (JS) library allows to create messages using Google's [Protocol Buffers]. The latter define in addition to messages also remote procedure call (RPC) services.
+The [ProtoBuf.js] JavaScript (**JS**) library allows to create messages using Google's [Protocol Buffers], which allow to specify in addition to **messages** also *remote procedure call* (**RPC**) **services**: However, it is the responsibility of the developer to come up with an actual RPC *mechanism*!
+
+Hence, this package [ProtoBuf.Rpc.js] provides a corresponding RPC implementation via [XMLHttpRequest] (**XHR**) and [WebSockets] (**WS**): It is based on a *request* and *response* pattern. However when using [WebSockets], then it is also possible to have a *publish* and *subscribe* pattern - to realize subscriptions from a client to the server side.
 
 ## Example: Reflector Service
 
@@ -36,11 +40,12 @@ service Service {
     rpc ack(AckRequest) returns(AckResult);
 }
 ```
-This is the content of the `reflector.proto` file: Here the RPC service has been named `Reflector.Service`, but any other designation is possible. It provides only a single method `ack`, which takes an `AckRequest` and returns an `AckResult`. Both structures contain a single `timestamp` field, where the result's timestamp shall simply be a copy of the request's timestamp.
 
-### Usage: NodeJS
+Above you have the content of the `reflector.proto` specification: Here the RPC service has been named `Reflector.Service`, but any other designation is possible. It provides a single method `ack`, which takes an `AckRequest` and returns an `AckResult`. Both structures contain a single `timestamp` field, where the result's timestamp shall simply be a copy of the request's timestamp.
 
-The `ack` method allows to measure the round trip time (RTT) from the client to the server. In NodeJS an invocation would for example look like:
+### Usage: Node.js
+
+The `ack` method allows to measure the round trip time (RTT) from the client to the server. In Node.js a *client side* script could look like:
 
 ```js
 let ProtoBuf = require('protobufjs');
@@ -58,11 +63,93 @@ reflector_svc.on('open', function () {
         timestamp: new Date().toISOString()
     };
     reflector_svc.ack(req, function (error, res) {
-        if (error !== null) throw error;
+        if (error !== null) throw new Error(error);
         assert(res.timestamp);
         let ms = new Date() - new Date(res.timestamp);
         assert(ms > 0);
     });
+});
+```
+
+## Example: Listener Service
+
+```proto
+package Listener;
+
+message SubRequest {
+    string timestamp = 1;
+}
+message SubResult {
+    string timestamp = 1;
+}
+
+service Service {
+    rpc sub(SubRequest) returns(stream SubResult);
+}
+```
+
+The `listener.proto` specification above describes an RPC service named `Listener.Service`. It provides a single method `sub`, which takes a `SubRequest` and returns a `SubResult`. Both structures contain again a single `timestamp` field, where the result's timestamp shall again simply be a copy of the request's timestamp.
+
+Further, `SubResult` is designated as a **`stream`**, which causes the service's RCP implementation (in [ProtoBuf.Rpc.js]) to keep the callback handler of the `sub` invocation - as long as the `Listener.Service` is around. Therefore, the server is able to push an arbitrary number of messages to the client (realizing an effective *publish* and *subscribe* pattern).
+
+### Usage: Node.js
+
+The `sub` method allows to subscribe from the client to the server. In Node.js a *client side* script could look like:
+
+```js
+let ProtoBuf = require('protobufjs');
+ProtoBuf.Rpc = require('protobufjs-rpc');
+
+let ListenerFactory = ProtoBuf.loadSync('uri/for/listener.proto'),
+    Listener = ListenerFactory.lookup('Listener');
+
+let listener_svc = new ProtoBuf.Rpc(Listener.Service, {
+    url: 'ws://localhost:8088'
+});
+
+listener_svc.on('open', function () {
+    let req = {
+        timestamp: new Date().toISOString()
+    };
+    listener_svc.sub(req/*, function (error, res) {
+        if (error !== null) throw new Error(error);
+        assert(res.timestamp);
+        let ms = new Date() - new Date(res.timestamp);
+        assert(ms > 0);
+    }*/);
+});
+```
+
+The callback above is actually not required, since it is possible to *subscribe* to a single or multiple handlers via the `data` event:
+
+```js
+listener_svc.on('data', function (res, method) {
+    test.ok(res.timestamp);
+});
+listener_svc.on('data', function (res, method) {
+    test.ok(method); // method.name === 'sub'
+});
+listener_svc.on('end', function () {
+    listener_svc.off('data');
+});
+```
+
+Further notice, that upon an `end` event any callback handlers for the `data` event are switched off. Wrapping up the service the transport layer gets closed and the `end` event is emitted:
+
+```js
+listener_svc.end();
+```
+
+It is also possible to switch off a particular handler by providing the `off` function a reference to the original callback (see [event emitters](http://dcode.io/protobuf.js/util.EventEmitter.html) for further information):
+
+```js
+let callback = function (res, method) {
+    // ...
+};
+
+listener_svc.on('data', callback);
+listener_svc.on('end', function () {
+    listener_svc.off('data', callback);
 });
 ```
 
@@ -114,9 +201,9 @@ The fully qualified `name` (FQN) of an `Rpc.Request` indicates, which method on 
 
   + The `data` bytes carry an encoding of the current request, where for example in case of `.Reflector.Service.ack` it simply would be the byte representation of the timestamp.
 
-This [ProtoBuf.Rpc.js] library offers abstractions for RPC services on the *client side* (NodeJS and BrowserJS compatible), whereas for the *server side*  only simple and functional examples in [NodeJS], [Python] and [QT/C++] have been provided.
+This [ProtoBuf.Rpc.js] library offers abstractions for RPC services on the *client side* (Node.js and BrowserJS compatible), whereas for the *server side*  only simple and functional examples in [Node.js], [Python] and [QT/C++] have been provided.
 
-## Installation: NodeJS
+## Installation: Node.js
 
 Clone the library with [GIT]:
 
@@ -132,7 +219,7 @@ cd pb-rpc.git && npm install
 
 [Protocol Buffers] require the special compiler [protoc] to create language bindings from the `proto` files: But since the [ProtoBuf.js] library is able to process these files on the fly, no such compiler is required (for JavaScript based clients or servers).
  
-## Execution: NodeJS
+## Execution: Node.js
 
 ### Server Execution
 
@@ -161,7 +248,7 @@ For the next `10` seconds the client will keep invoking the corresponding functi
     dT[ack]@0: 0.005941
     dT[ack]@0: 0.027208
 
-Here the RTTs start high with about `5.4` milli-seconds, apparently due to the NodeJS' initial JIT optimizations. But very quickly they go down to a sub-milli-second range.
+Here the RTTs start high with about `5.4` milli-seconds, apparently due to the Node.js' initial JIT optimizations. But very quickly they go down to a sub-milli-second range.
 
 By increasing the numbers assigned to the arguments, for example by setting `--n-ack=2`, you can control the throughput (which adversely effects the RTT latencies). For the detailed discussion of the performance characteristics see the `log/README.md` file.
 
@@ -226,8 +313,8 @@ TRANSPORT.onmessage = function (data) {
                 timestamp: req.timestamp
             });
             break;
-     // case '.Calculator.Service.add':
-     //     res = process_add(req);
+     // case '.Listener.Service.sub':
+     //     res = process_sub(req);;
      //     break;
         default:
             throw(new Error(rpc_req.name + ': not supported'));
@@ -237,11 +324,18 @@ TRANSPORT.onmessage = function (data) {
         id: rpc_req.id, data: res.finish()
     });
 
+    //
+    // `TRANSPORT.send` can be invoked multiple times in case of a
+    // *publish* and *subscribe* pattern (requiring the result to be
+    // designated as a **stream** in the `*.proto` specification). But
+    // otherwise, a single call of `TRANSPORT.send` is enough!
+    // 
+
     TRANSPORT.send(rpc_res.finish());
 };
 ```
 
-Here `TRANSPORT` could for example be a `WebSocket` or an `XMLHttpRequest`, to receive and send messages.
+Here `TRANSPORT` could for example be a `WebSocket` or an `XMLHttpRequest`, to receive and send messages. However, for a *publish* and *subscribe* pattern the `TRANSPORT` layer requires a `WebSocket` connection.
 
 ### QT/C++ `rpc-server`:
 
